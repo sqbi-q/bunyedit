@@ -1,3 +1,4 @@
+/*
 package fun.raccoon.bunyedit.mixin;
 
 import java.util.List;
@@ -21,3 +22,4 @@ public abstract class InitCommandsMixin {
         commands.addAll(EditorCommands.LIST);
     }
 }
+*/

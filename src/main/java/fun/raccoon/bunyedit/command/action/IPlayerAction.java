@@ -5,25 +5,30 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import fun.raccoon.bunyedit.BunyEdit;
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.data.PlayerData;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.player.gamemode.Gamemode;
 
+// TODO normalize all IAction subtypes - eg. player is already known in CommandSource
+
 public interface IPlayerAction extends IAction {
-    public boolean apply(I18n i18n, CommandSender sender, @Nonnull EntityPlayer player, PlayerData playerData, List<String> argv);
+    public boolean apply(I18n i18n, CommandSource cmdSource, @Nonnull Player player, PlayerData playerData, List<String> argv) throws CommandSyntaxException;
 
     @Override
-    default public boolean apply(I18n i18n, CommandSender sender, List<String> argv) {
-        @Nullable EntityPlayer player = sender.getPlayer();
-        if (player == null)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.notaplayer"));
-        
+    default public boolean apply(I18n i18n, CommandSource cmdSource, List<String> argv) throws CommandSyntaxException {
+        @Nullable Player player = cmdSource.getSender();
+        if (player == null) {
+            throw CommandExceptions.NOT_A_PLAYER.create();
+        }
+
         boolean allowed = false;
-        if (sender.isAdmin()) {
+        if (cmdSource.hasAdmin()) {
             allowed = true;
         } else {
             if (player.gamemode.equals(Gamemode.creative) && BunyEdit.ALLOWED_CREATIVE) {
@@ -33,9 +38,10 @@ public interface IPlayerAction extends IAction {
             }
         }
 
-        if (!allowed)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.insufficientperms"));
-        
-        return apply(i18n, sender, player, PlayerData.get(player), argv);
+        if (!allowed) {
+            throw CommandExceptions.INSUFFICIENT_PERMS.create();
+        }
+
+        return apply(i18n, cmdSource, player, PlayerData.get(player), argv);
     }
 }

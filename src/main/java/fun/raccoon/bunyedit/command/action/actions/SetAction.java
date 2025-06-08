@@ -8,6 +8,9 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.command.action.ISelectionAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
@@ -15,23 +18,22 @@ import fun.raccoon.bunyedit.data.buffer.BlockData;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.parsers.Filter;
 import fun.raccoon.bunyedit.util.parsers.Pattern;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class SetAction implements ISelectionAction {
     @Override
     public boolean apply(
-        I18n i18n, CommandSender sender, @Nonnull EntityPlayer player,
+        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
         PlayerData playerData, ValidSelection selection, List<String> argv
-    ) {
+    ) throws CommandSyntaxException {
         String patternStr;
         String filterStr;
         switch (argv.size()) {
             case 0:
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toofewargs"));
+                throw CommandExceptions.TOO_FEW_ARGS.create();
             case 1:
                 filterStr = null;
                 patternStr = argv.get(0);
@@ -41,19 +43,23 @@ public class SetAction implements ISelectionAction {
                 patternStr = argv.get(1);
                 break;
             default:
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
+                throw CommandExceptions.TOO_MANY_ARGS.create();
         }
 
+        Player sender = cmdSource.getSender();
+
         Function<BlockData, BlockData> pattern = Pattern.fromString(sender, patternStr);
-        if (pattern == null)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidpattern"));
+        if (pattern == null) {
+            throw CommandExceptions.INVALID_PATTERN.create();
+        }
 
         Stream<ChunkPosition> stream = selection.coordStream();
 
         if (filterStr != null) {
             Predicate<BlockData> filter = Filter.fromString(filterStr);
-            if (filter == null)
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidfilter"));
+            if (filter == null) {
+                throw CommandExceptions.INVALID_FILTER.create();
+            }
             stream = stream
                 .filter(pos -> filter.test(new BlockData(player.world, pos)))
                 // this might look silly. but we need the filter to be greedy

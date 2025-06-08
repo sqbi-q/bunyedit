@@ -8,19 +8,21 @@ import fun.raccoon.bunyedit.data.selection.Selection;
 import fun.raccoon.bunyedit.mixin.WorldAccessor;
 import fun.raccoon.bunyedit.util.ChatString;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.EntityPlayerSP;
-import net.minecraft.core.HitResult;
-import net.minecraft.core.HitResult.HitType;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.client.entity.player.PlayerLocal;
+import net.minecraft.core.util.phys.HitResult;
+import net.minecraft.core.util.phys.HitResult.HitType;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.item.Item;
 import net.minecraft.core.item.ItemStack;
+import net.minecraft.core.item.Items;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.TextFormatting;
-import net.minecraft.core.net.packet.Packet3Chat;
-import net.minecraft.core.util.phys.Vec3d;
+import net.minecraft.core.net.packet.PacketChat;
+import net.minecraft.core.util.phys.Vec3;
 import net.minecraft.core.world.World;
 import net.minecraft.core.world.chunk.ChunkPosition;
-import net.minecraft.server.entity.player.EntityPlayerMP;
+import net.minecraft.server.entity.player.PlayerServer;
+import turniplabs.halplibe.helper.EnvironmentHelper;
 
 /**
  * Tool to assist players with inputting selection coordinates.
@@ -38,7 +40,7 @@ public class Cursor {
      * <p>
      * i chose a feather because it looks vaguely like a mouse pointer if you squint.
      */
-    private static final Item DEFAULT_CURSOR_ICON = Item.featherChicken;
+    private static final Item DEFAULT_CURSOR_ICON = Items.FEATHER_CHICKEN;
 
     /**
      * get {@link ItemStack} for the default cursor
@@ -64,15 +66,15 @@ public class Cursor {
      * CommandSender provides sendMessage, which unifies sending raw chat messages
      * to an individual player in the context of both singleplayer and multiplayer.
      * <p>
-     * for some reason, {@link EntityPlayer} does not provide this except in the special
+     * for some reason, {@link Player} does not provide this except in the special
      * case of one plain constant translation key. so, we provide
      * {@link net.minecraft.core.net.command.CommandSender}'s API here for convenience.
      */
-    private static void sendMessage(EntityPlayer player, String s) {
-        if (player instanceof EntityPlayerMP) {
-            ((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new Packet3Chat(s));
-        } else if (player instanceof EntityPlayerSP) {
-            Minecraft.getMinecraft((Object)player).ingameGUI.addChatMessage(s);
+    private static void sendMessage(Player player, String s) {
+        if (EnvironmentHelper.isServerEnvironment()) {
+            ((PlayerServer)player).playerNetServerHandler.sendPacket(new PacketChat(s));
+        } else if (player instanceof PlayerLocal) {
+            Minecraft.getMinecraft().hudIngame.addChatMessage(s);
         }
     }
 
@@ -81,7 +83,7 @@ public class Cursor {
      * coordinates in the specified selection slot. Additionally provide slot,
      * coordinate, and selected block in chat.
      */
-    public static void select(@Nonnull EntityPlayer player, Selection.Slot slot) {
+    public static void select(@Nonnull Player player, Selection.Slot slot) {
         I18n i18n = I18n.getInstance();
         PlayerData playerData = PlayerData.get(player);
         World world = player.world;
@@ -90,19 +92,19 @@ public class Cursor {
         if (!playerData.lastInteract.tryUpdate(((WorldAccessor) world).getRuntime()))
             return;
 
-        Vec3d start = player.getPosition(0);
-        // EntityPlayerMP doesn't know about its height offset?
-        if (player instanceof EntityPlayerMP) {
+        Vec3 start = player.getPosition(0, false);
+        // PlayerServer doesn't know about its height offset?
+        if (EnvironmentHelper.isServerEnvironment() /*&& player instanceof PlayerServer*/) {
             if (player.isDwarf())
-                start.yCoord += 0.62;
+                start.y += 0.62;
             else
-                start.yCoord += 1.62;
+                start.y += 1.62;
         }
-        Vec3d direction = player.getViewVector(0);
-        Vec3d end = start.addVector(
-            direction.xCoord * TRACE_DISTANCE,
-            direction.yCoord * TRACE_DISTANCE,
-            direction.zCoord * TRACE_DISTANCE);
+        Vec3 direction = player.getViewVector(0);
+        Vec3 end = start.add(
+            direction.x * TRACE_DISTANCE,
+            direction.y * TRACE_DISTANCE,
+            direction.z * TRACE_DISTANCE);
         @Nullable HitResult hit = world.checkBlockCollisionBetweenPoints(start, end);
 
         if (hit != null && hit.hitType.equals(HitType.TILE)) {

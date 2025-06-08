@@ -4,16 +4,18 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.command.action.IPlayerAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
 import fun.raccoon.bunyedit.data.buffer.EntityBuffer;
 import fun.raccoon.bunyedit.data.buffer.UndoPage;
 import fun.raccoon.bunyedit.data.buffer.UndoTape;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 
 public class UndoRedoAction implements IPlayerAction {
     public enum Which {
@@ -29,11 +31,12 @@ public class UndoRedoAction implements IPlayerAction {
 
     @Override
     public boolean apply(
-        I18n i18n, CommandSender sender, @Nonnull EntityPlayer player,
+        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
         PlayerData playerData, List<String> argv
-    ) {
-        if (argv.size() > 0)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
+    ) throws CommandSyntaxException {
+        if (argv.size() > 0) {
+            throw CommandExceptions.TOO_MANY_ARGS.create();
+        }
 
         UndoTape undoTape = playerData.getUndoTape(player.world);
         UndoPage page = this.which.equals(Which.UNDO)
@@ -41,11 +44,11 @@ public class UndoRedoAction implements IPlayerAction {
             : undoTape.redo();
 
         if (page == null) {
-            throw new CommandError(i18n.translateKeyAndFormat(
-                "bunyedit.cmd.undoredo.err.nopages",
-                i18n.translateKey(this.which.equals(Which.UNDO)
-                    ? "bunyedit.cmd.undoredo.undo"
-                    : "bunyedit.cmd.undoredo.redo")));
+            String whichI18n = i18n.translateKey(this.which.equals(Which.UNDO)
+                ? "bunyedit.cmd.undoredo.undo"
+                : "bunyedit.cmd.undoredo.redo");
+
+            throw CommandExceptions.NO_PAGES.formatAndCreate(whichI18n);
         }
 
         BlockBuffer newBlocks = page.getRight().blocks;

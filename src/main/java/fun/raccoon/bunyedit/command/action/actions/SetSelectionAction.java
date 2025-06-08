@@ -4,15 +4,17 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.command.action.IPlayerAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.selection.Selection;
 import fun.raccoon.bunyedit.util.ChatString;
 import fun.raccoon.bunyedit.util.parsers.RelCoords;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class SetSelectionAction implements IPlayerAction {
@@ -24,9 +26,9 @@ public class SetSelectionAction implements IPlayerAction {
 
     @Override
     public boolean apply(
-        I18n i18n, CommandSender sender, @Nonnull EntityPlayer player,
+        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
         PlayerData playerData, List<String> argv
-    ) {
+    ) throws CommandSyntaxException {
         ChunkPosition pos;
         switch (argv.size()) {
             case 0:
@@ -34,16 +36,17 @@ public class SetSelectionAction implements IPlayerAction {
                 break;
             case 1:
                 pos = RelCoords.from(player, argv.get(0));
-                if (pos == null)
-                    throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidcoords"));
+                if (pos == null) {
+                    throw CommandExceptions.INVALID_COORDS.create();
+                }
                 break;
             default:
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
+                throw CommandExceptions.TOO_MANY_ARGS.create();
         }
         
         playerData.selection.set(slot, player.world, pos);
 
-        sender.sendMessage(ChatString.gen_select_action(slot, player.world, pos));
+        cmdSource.getSender().sendMessage(ChatString.gen_select_action(slot, player.world, pos));
 
         return true;
 

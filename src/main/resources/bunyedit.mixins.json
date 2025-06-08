@@ -4,7 +4,6 @@
   "package": "fun.raccoon.bunyedit.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "InitCommandsMixin",
     "CursorUseMixin",
     "BlockSignAccessor",
     "WorldAccessor"

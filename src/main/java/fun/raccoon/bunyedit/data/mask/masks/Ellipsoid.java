@@ -6,10 +6,11 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.data.mask.IMaskCommand;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
-import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class Ellipsoid implements IMaskCommand {
@@ -28,18 +29,18 @@ public class Ellipsoid implements IMaskCommand {
         return "[h]";
     }
 
-    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) {
-        I18n i18n = I18n.getInstance();
-
+    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) throws CommandSyntaxException {
         switch (argv.length) {
             case 0:
                 return p(false);
             case 1:
-                if (!argv[0].equals("h"))
-                    throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidhollow"));
+                if (!argv[0].equals("h")) {
+                    throw CommandExceptions.INVALID_HOLLOW.create();
+                    
+                }
                 return p(true);
             default:
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
+                throw CommandExceptions.TOO_MANY_ARGS.create();
         }
     }
 

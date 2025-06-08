@@ -114,7 +114,7 @@ public class ValidSelection {
 
         List<Entity> entities = this.selection.getWorld().getEntitiesWithinAABB(
             Entity.class,
-            new AABB(
+            AABB.getPermanentBB(
                 min.x, min.y, min.z,
                 max.x, max.y, max.z));
 

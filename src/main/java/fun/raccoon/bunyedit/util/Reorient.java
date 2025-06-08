@@ -3,24 +3,27 @@ package fun.raccoon.bunyedit.util;
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import fun.raccoon.bunyedit.mixin.BlockSignAccessor;
 import net.minecraft.core.block.Block;
-import net.minecraft.core.block.BlockBed;
-import net.minecraft.core.block.BlockButton;
-import net.minecraft.core.block.BlockChest;
-import net.minecraft.core.block.BlockFenceGate;
-import net.minecraft.core.block.BlockLadder;
-import net.minecraft.core.block.BlockLever;
-import net.minecraft.core.block.BlockPumpkin;
-import net.minecraft.core.block.BlockRail;
-import net.minecraft.core.block.BlockRedstoneRepeater;
-import net.minecraft.core.block.BlockSign;
-import net.minecraft.core.block.BlockSlab;
-import net.minecraft.core.block.BlockStairs;
-import net.minecraft.core.block.BlockTileEntityRotatable;
-import net.minecraft.core.block.BlockTorch;
-import net.minecraft.core.block.BlockTrapDoor;
-import net.minecraft.core.block.piston.BlockPistonBase;
-import net.minecraft.core.block.piston.BlockPistonHead;
+import net.minecraft.core.block.Blocks;
+import net.minecraft.core.block.BlockLogicBed;
+import net.minecraft.core.block.BlockLogicButton;
+import net.minecraft.core.block.BlockLogicChest;
+import net.minecraft.core.block.BlockLogicFenceGate;
+import net.minecraft.core.block.BlockLogicLadder;
+import net.minecraft.core.block.BlockLogicLever;
+import net.minecraft.core.block.BlockLogicPumpkin;
+import net.minecraft.core.block.BlockLogicRail;
+import net.minecraft.core.block.BlockLogicRepeater;
+import net.minecraft.core.block.BlockLogicRotatable;
+import net.minecraft.core.block.BlockLogicSign;
+import net.minecraft.core.block.BlockLogicSlab;
+import net.minecraft.core.block.BlockLogicStairs;
+import net.minecraft.core.block.BlockLogicTorch;
+import net.minecraft.core.block.BlockLogicTrapDoor;
+import net.minecraft.core.block.piston.BlockLogicPistonBase;
+import net.minecraft.core.block.piston.BlockLogicPistonHead;
 import net.minecraft.core.util.helper.Axis;
+
+// TODO check this code later because it smells - qf
 
 public class Reorient {
     /**
@@ -30,47 +33,47 @@ public class Reorient {
      * @throws NullPointerException if blockData is null
      */
     public static BlockData flipped(BlockData blockData, Axis axis) {
-        Block block = Block.getBlock(blockData.id);
+        Block<?> block = Blocks.getBlock(blockData.id);
         int meta = blockData.meta;
 
-        if (block instanceof BlockStairs) {
+        if (block.getLogic() instanceof BlockLogicStairs) {
             if (axis.equals(Axis.X) && (meta&2)==0)
                 meta ^= 1;
             if (axis.equals(Axis.Y))
                 meta ^= 8;
             if (axis.equals(Axis.Z) && (meta&2)==2)
                 meta ^= 1;
-        } else if (block instanceof BlockTrapDoor) {
+        } else if (block.getLogic() instanceof BlockLogicTrapDoor) {
             if (axis.equals(Axis.X) && (meta&2)==2)
                 meta ^= 1;
             if (axis.equals(Axis.Y))
                 meta ^= 8;
             if (axis.equals(Axis.Z) && (meta&2)==0)
                 meta ^= 1;
-        } else if (block instanceof BlockSlab) {
+        } else if (block.getLogic() instanceof BlockLogicSlab) {
             if (axis.equals(Axis.Y) && (meta&1)==0)
                 meta ^= 2;
         } else if (
-            block instanceof BlockLadder
-            || block instanceof BlockPumpkin
-            || block instanceof BlockTileEntityRotatable
+            block.getLogic() instanceof BlockLogicLadder
+            || block.getLogic() instanceof BlockLogicPumpkin
+            || block.getLogic() instanceof BlockLogicRotatable
         ) {
             if (axis.equals(Axis.X) && (meta&2)==0)
                 meta ^= 1;
             if (axis.equals(Axis.Z) && (meta&2)==2)
                 meta ^= 1;
-        } else if (block instanceof BlockFenceGate
-            || block instanceof BlockRedstoneRepeater
-            || block instanceof BlockBed
-            || block instanceof BlockChest
+        } else if (block.getLogic() instanceof BlockLogicFenceGate
+            || block.getLogic() instanceof BlockLogicRepeater
+            || block.getLogic() instanceof BlockLogicBed
+            || block.getLogic() instanceof BlockLogicChest
         ) {
             if (axis.equals(Axis.X) && (meta&1)==1)
                 meta ^= 2;
             if (axis.equals(Axis.Z) && (meta&1)==0)
                 meta ^= 2;
         } else if (
-            block instanceof BlockPistonBase
-            || block instanceof BlockPistonHead
+            block.getLogic() instanceof BlockLogicPistonBase
+            || block.getLogic() instanceof BlockLogicPistonHead
         ) {
             if (axis.equals(Axis.X) && (meta&6)==4)
                 meta ^= 1;
@@ -79,9 +82,9 @@ public class Reorient {
             if (axis.equals(Axis.Z) && (meta&6)==2)
                 meta ^= 1;
         } else if (
-            block instanceof BlockTorch
-            || block instanceof BlockButton
-            || block instanceof BlockLever
+            block.getLogic() instanceof BlockLogicTorch
+            || block.getLogic() instanceof BlockLogicButton
+            || block.getLogic() instanceof BlockLogicLever
         ) {
             switch (meta&7) {
                 case 1:
@@ -91,7 +94,7 @@ public class Reorient {
                 case 4:
                     if (axis.equals(Axis.Z)) meta ^= 7; break;
             }
-        } else if (block instanceof BlockRail) {
+        } else if (block.getLogic() instanceof BlockLogicRail) {
             if (axis.equals(Axis.X) && (meta&14)==2)
                 meta ^= 1;
             if (axis.equals(Axis.Z) && (meta&14)==4)
@@ -102,9 +105,9 @@ public class Reorient {
                 meta ^= 14;
                 meta ^= 1;
             }
-        } else if (block instanceof BlockSign) {
+        } else if (block.getLogic() instanceof BlockLogicSign) {
             // the final boss
-            if (((BlockSignAccessor)block).getIsFreestanding()) {
+            if (((BlockSignAccessor)block.getLogic()).getIsFreestanding()) {
                 if (axis.equals(Axis.X))
                     meta = meta&~15 | (16-(meta&15));
                 if (axis.equals(Axis.Z))

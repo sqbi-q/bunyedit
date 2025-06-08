@@ -6,8 +6,9 @@ import javax.annotation.Nullable;
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import fun.raccoon.bunyedit.data.selection.Selection;
 import fun.raccoon.bunyedit.data.selection.Selection.Slot;
-import net.minecraft.core.HitResult;
+import net.minecraft.core.util.phys.HitResult;
 import net.minecraft.core.block.Block;
+import net.minecraft.core.block.Blocks;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.TextFormatting;
 import net.minecraft.core.world.World;
@@ -37,7 +38,7 @@ public class ChatString {
         if (blockData.id == 0) {
             repr = "air";
         } else {
-            Block block = Block.getBlock(blockData.id);
+            Block<?> block = Blocks.getBlock(blockData.id);
 
             repr = block.getKey();
             // remove "tile."

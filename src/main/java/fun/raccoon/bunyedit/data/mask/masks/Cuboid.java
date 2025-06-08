@@ -4,10 +4,10 @@ import java.util.function.BiPredicate;
 
 import javax.annotation.Nonnull;
 
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.data.mask.IMaskCommand;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
-import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class Cuboid implements IMaskCommand {
@@ -15,15 +15,16 @@ public class Cuboid implements IMaskCommand {
         return "[h]";
     }
 
-    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) {
-        I18n i18n = I18n.getInstance();
+    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) 
+        throws CommandSyntaxException {
         
         switch (argv.length) {
             case 0:
                 return (selection, pos) -> true;
             case 1:
-                if (!argv[0].equals("h"))
-                    throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidhollow"));
+                if (!argv[0].equals("h")) {
+                    throw CommandExceptions.INVALID_HOLLOW.create();
+                }
                 return (selection, pos) -> {
                     ChunkPosition s1 = selection.getPrimary();
                     ChunkPosition s2 = selection.getSecondary();
@@ -31,7 +32,7 @@ public class Cuboid implements IMaskCommand {
                     return pos.x == s1.x || pos.x == s2.x || pos.y == s1.y || pos.y == s2.y || pos.z == s1.z || pos.z == s2.z;
                 };
             default:
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
+                throw CommandExceptions.TOO_MANY_ARGS.create();
         }
     }
 }

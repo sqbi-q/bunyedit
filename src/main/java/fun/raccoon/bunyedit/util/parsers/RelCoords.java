@@ -6,12 +6,12 @@ import javax.annotation.Nullable;
 import fun.raccoon.bunyedit.data.look.LookAxis;
 import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.util.PosMath;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class RelCoords {
     // TODO: parser combinator
-    public static ChunkPosition playerPos(@Nonnull EntityPlayer player, boolean fromHead) {
+    public static ChunkPosition playerPos(@Nonnull Player player, boolean fromHead) {
         return new ChunkPosition( 
             (int)Math.floor(player.x),
             ((int)Math.floor(player.y)) - (fromHead ? 2 : 1),
@@ -73,7 +73,7 @@ public class RelCoords {
         return PosMath.fromArray(res);
     }
 
-    public static @Nullable ChunkPosition from(@Nonnull EntityPlayer player, String triple) {
+    public static @Nullable ChunkPosition from(@Nonnull Player player, String triple) {
         return from(playerPos(player, false), new LookDirection(player), triple);
     }
 }

@@ -4,6 +4,9 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.command.action.ISelectionAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
@@ -13,29 +16,28 @@ import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.PosMath;
 import fun.raccoon.bunyedit.util.parsers.RelCoords;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
     // TODO: actually implement entity copying
 public class MoveAction implements ISelectionAction {
     @Override
     public boolean apply(
-        I18n i18n, CommandSender sender, @Nonnull EntityPlayer player,
+        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
         PlayerData playerData, ValidSelection selection, List<String> argv
-    ) {
+    ) throws CommandSyntaxException {
         ChunkPosition copyOrigin = selection.getPrimary();
         ChunkPosition pasteOrigin;
         switch (argv.size()) {
             case 0:
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toofewargs"));
+                throw CommandExceptions.TOO_FEW_ARGS.create();
             case 1:
                 pasteOrigin = RelCoords.from(copyOrigin, new LookDirection(player), argv.get(0));
                 break;
             default:
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
+                throw CommandExceptions.TOO_MANY_ARGS.create();
         }
 
         BlockData air = new BlockData();

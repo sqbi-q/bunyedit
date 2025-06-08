@@ -11,18 +11,21 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import net.minecraft.core.block.Block;
+import net.minecraft.core.block.Blocks;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
 import net.minecraft.core.net.command.TextFormatting;
 import net.minecraft.core.util.collection.Pair;
 
 public class Pattern {
     // TODO: parser combinator
-    private static @Nullable BlockData blockDataFromString(CommandSender sender, String patternStr)
-        throws CommandError
+    private static @Nullable BlockData blockDataFromString(Player sender, String patternStr)
+        throws CommandSyntaxException
     {
         I18n i18n = I18n.getInstance();
 
@@ -58,7 +61,7 @@ public class Pattern {
 
             // find all prefix matches
             String key_ = key;
-            List<Block> blocks = Arrays.stream(Block.blocksList)
+            List<Block<?>> blocks = Arrays.stream(Blocks.blocksList)
                 .filter(b -> b != null && b.getKey().startsWith("tile." + key_))
                 .collect(Collectors.toList());
             
@@ -75,7 +78,7 @@ public class Pattern {
             }
 
             // if there's an exact match, only consider that
-            Optional<Block> maybeBlock = blocks.stream().filter(b -> b.getKey().equals("tile." + key_)).findAny();
+            Optional<Block<?>> maybeBlock = blocks.stream().filter(b -> b.getKey().equals("tile." + key_)).findAny();
             if (maybeBlock.isPresent()) {
                 blocks = new ArrayList<>();
                 blocks.add(maybeBlock.get());
@@ -84,9 +87,9 @@ public class Pattern {
             switch (blocks.size()) {
                 case 0: return null;
                 case 1:
-                    Block block_ = blocks.get(0);
+                    Block<?> block_ = blocks.get(0);
                     String key__ = block_.getKey().substring(5);
-                    id = block_.id;
+                    id = block_.id();
                     if (!key__.equals(origKey)) {
                         sender.sendMessage(
                             TextFormatting.formatted(
@@ -102,10 +105,13 @@ public class Pattern {
                     if (blocks.size() > 8)
                         keyStream = Stream.concat(keyStream.limit(8), Stream.of("..."));
 
-                    throw new CommandError(String.format("%s! %s",
+                    
+                    String exceptionStr = String.format("%s! %s",
                         i18n.translateKeyAndFormat("bunyedit.cmd.err.ambiguouskey", key_),
                         i18n.translateKeyAndFormat("bunyedit.cmd.err.ambiguouskey.try",
-                            keyStream.collect(Collectors.joining(", ")))));
+                            keyStream.collect(Collectors.joining(", "))));
+
+                    throw CommandExceptions.fromString(exceptionStr).create();
             }
         }
 
@@ -120,8 +126,8 @@ public class Pattern {
         return new BlockData(id, meta, null);
     }
 
-    private static @Nullable Function<BlockData, BlockData> subPattern(CommandSender sender, String patternStr)
-        throws CommandError
+    private static @Nullable Function<BlockData, BlockData> subPattern(Player sender, String patternStr)
+        throws CommandSyntaxException
     {
         BlockData blockData_ = blockDataFromString(sender, patternStr);
         if (blockData_ == null)
@@ -129,7 +135,9 @@ public class Pattern {
         return blockData -> blockData_;
     }
 
-    public static @Nullable Function<BlockData, BlockData> fromString(CommandSender sender, String patternArg) {
+    public static @Nullable Function<BlockData, BlockData> fromString(Player sender, String patternArg)
+        throws CommandSyntaxException
+    {
         List<Pair<Integer, Function<BlockData, BlockData>>> subPatterns = new ArrayList<>();
         String[] patternStrings = patternArg.split("/");
 

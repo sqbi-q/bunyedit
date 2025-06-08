@@ -1,10 +1,10 @@
 package fun.raccoon.bunyedit.mixin.server;
 
 import fun.raccoon.bunyedit.Cursor;
-import net.minecraft.core.net.packet.Packet53BlockChange;
+import net.minecraft.core.net.packet.PacketBlockUpdate;
 import net.minecraft.core.util.helper.Side;
-import net.minecraft.server.entity.player.EntityPlayerMP;
-import net.minecraft.server.net.handler.NetServerHandler;
+import net.minecraft.server.entity.player.PlayerServer;
+import net.minecraft.server.net.handler.PacketHandlerServer;
 import net.minecraft.server.world.ServerPlayerController;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,10 +21,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * so we need to make sure we send {@link Packet53BlockChange} to not get
  * desynced with annoying ghosts
  */
-@Mixin(value = NetServerHandler.class, remap = false)
+@Mixin(value = PacketHandlerServer.class, remap = false)
 public abstract class CursorCancelBlockBreakMixin {
     @Shadow
-    private EntityPlayerMP playerEntity;
+    private PlayerServer playerEntity;
     
     @Redirect(
         method = "handleBlockDig",
@@ -49,7 +49,7 @@ public abstract class CursorCancelBlockBreakMixin {
     ) {
         if (Cursor.isCursorItem(playerEntity.inventory.getCurrentItem())) {
             playerEntity.playerNetServerHandler.sendPacket(
-                new Packet53BlockChange(x, y, z, playerEntity.world));
+                new PacketBlockUpdate(x, y, z, playerEntity.world));
 
             return;
         }

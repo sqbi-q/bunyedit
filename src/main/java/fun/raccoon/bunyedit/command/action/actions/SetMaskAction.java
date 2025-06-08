@@ -9,24 +9,29 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.command.action.IPlayerAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.mask.IMaskCommand;
 import fun.raccoon.bunyedit.data.mask.Masks;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class SetMaskAction implements IPlayerAction {
     @Override
     public boolean apply(
-        I18n i18n, CommandSender sender, @Nonnull EntityPlayer player,
+        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
         PlayerData playerData, List<String> argv
-    ) {
+    ) throws CommandSyntaxException {
         String maskName;
+
+        Player sender = cmdSource.getSender();
+
         switch (argv.size()) {
             case 0:
                 sender.sendMessage(String.format("%s: %s",
@@ -52,8 +57,9 @@ public class SetMaskAction implements IPlayerAction {
         }
 
         @Nullable IMaskCommand maskCmd = Masks.MASKS.get(maskName);
-        if (maskCmd == null)
-            throw new CommandError(i18n.translateKeyAndFormat("bunyedit.cmd.mask.err.nosuchmask", maskName));
+        if (maskCmd == null) {
+            throw CommandExceptions.NO_SUCH_MASK.formatAndCreate(maskName);
+        }
 
         String[] maskArgv = {};
         if (argv.size() >= 1) {

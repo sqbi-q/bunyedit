@@ -3,7 +3,7 @@ package fun.raccoon.bunyedit.data.buffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.nbt.CompoundTag;
+import com.mojang.nbt.tags.CompoundTag;
 
 import net.minecraft.core.entity.Entity;
 import net.minecraft.core.entity.EntityDispatcher;

@@ -7,18 +7,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import fun.raccoon.bunyedit.Cursor;
 import fun.raccoon.bunyedit.data.selection.Selection;
-import net.minecraft.client.entity.player.EntityClientPlayerMP;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.client.entity.player.PlayerLocalMultiplayer;
+import net.minecraft.core.entity.player.Player;
 
 
-@Mixin(value = EntityPlayer.class, remap = false)
+@Mixin(value = Player.class, remap = false)
 public abstract class CursorSwingMixin {
     @Inject(method = "swingItem", at = @At("TAIL"))
     private void swingItemCheckCursor(CallbackInfo ci) {
-        EntityPlayer player = (EntityPlayer)(Object)this;
+        Player player = (Player)(Object)this;
         
         // serverside has this covered in multiplayer
-        if (!(player instanceof EntityClientPlayerMP)
+        if (!(player instanceof PlayerLocalMultiplayer)
                 && Cursor.isCursorItem(player.inventory.getCurrentItem()))
             Cursor.select(player, Selection.Slot.PRIMARY);
     }

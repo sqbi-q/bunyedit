@@ -14,7 +14,7 @@ import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.data.selection.Selection.Slot;
 import fun.raccoon.bunyedit.util.DirectionHelper;
 import fun.raccoon.bunyedit.util.PosMath;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.util.collection.Pair;
 import net.minecraft.core.util.helper.Direction;
 import net.minecraft.core.world.chunk.ChunkPosition;
@@ -31,7 +31,7 @@ public class Bound {
      */
     public static @Nullable Pair<ChunkPosition, ChunkPosition> fromString(
         ValidSelection selection,
-        @Nonnull EntityPlayer player,
+        @Nonnull Player player,
         String boundStr)
     {
         LookDirection heading = new LookDirection(player.yRot);

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.util.helper.Axis;
 import net.minecraft.core.util.helper.Direction;
 
@@ -62,7 +62,7 @@ public class LookDirection {
         this(yRot, 0F);
     }
 
-    public LookDirection(@Nonnull EntityPlayer player) {
+    public LookDirection(@Nonnull Player player) {
         this(player.yRot, player.xRot);
     }
 

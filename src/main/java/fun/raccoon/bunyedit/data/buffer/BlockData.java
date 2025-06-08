@@ -2,7 +2,7 @@ package fun.raccoon.bunyedit.data.buffer;
 
 import javax.annotation.Nullable;
 
-import com.mojang.nbt.CompoundTag;
+import com.mojang.nbt.tags.CompoundTag;
 
 import net.minecraft.core.block.Block;
 import net.minecraft.core.block.entity.TileEntity;
@@ -37,8 +37,8 @@ public class BlockData {
         this.nbt = null;
     }
 
-    public BlockData(Block block) {
-        this.id = block.id;
+    public BlockData(Block<?> block) {
+        this.id = block.id();
         this.meta = 0;
         this.nbt = null;
     }
@@ -53,7 +53,7 @@ public class BlockData {
         this.id = world.getBlockId(x, y, z);
         this.meta = world.getBlockMetadata(x, y, z);
 
-        TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
+        TileEntity tileEntity = world.getTileEntity(x, y, z);
         CompoundTag compoundTag;
         if (tileEntity == null) {
             compoundTag = null;

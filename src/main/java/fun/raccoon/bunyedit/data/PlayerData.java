@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
 import fun.raccoon.bunyedit.data.buffer.UndoTape;
 import fun.raccoon.bunyedit.data.selection.Selection;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.world.World;
 
 /**
@@ -28,7 +28,7 @@ public class PlayerData {
         return playerData;
     }
 
-    public static PlayerData get(@Nonnull EntityPlayer player) {
+    public static PlayerData get(@Nonnull Player player) {
         return PlayerData.get(player.username);
     }
 

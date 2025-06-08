@@ -7,15 +7,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import fun.raccoon.bunyedit.Cursor;
 import fun.raccoon.bunyedit.data.selection.Selection;
-import net.minecraft.core.entity.player.EntityPlayer;
-import net.minecraft.server.entity.player.EntityPlayerMP;
+import net.minecraft.core.entity.player.Player;
+import net.minecraft.server.entity.player.PlayerServer;
 
 
-@Mixin(value = EntityPlayerMP.class, remap = false)
+@Mixin(value = PlayerServer.class, remap = false)
 public abstract class CursorSwingMixin {
     @Inject(method = "swingItem", at = @At("TAIL"))
     private void swingItemCheckCursor(CallbackInfo ci) {
-        EntityPlayer player = (EntityPlayer)(Object)this;
+        Player player = (Player)(Object)this;
         
         if (Cursor.isCursorItem(player.inventory.getCurrentItem()))
             Cursor.select(player, Selection.Slot.PRIMARY);

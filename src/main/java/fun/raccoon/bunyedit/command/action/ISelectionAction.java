@@ -6,23 +6,25 @@ import java.util.function.BiPredicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.mask.IMaskCommand;
 import fun.raccoon.bunyedit.data.mask.Masks;
 import fun.raccoon.bunyedit.data.selection.Selection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.parsers.CmdArgs;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public interface ISelectionAction extends IPlayerAction {
-    public boolean apply(I18n i18n, CommandSender sender, @Nonnull EntityPlayer player, PlayerData playerData, ValidSelection selection, List<String> argv);
+    public boolean apply(I18n i18n, CommandSource cmdSource, @Nonnull Player player, PlayerData playerData, ValidSelection selection, List<String> argv) throws CommandSyntaxException;
     
     @Override
-    default public boolean apply(I18n i18n, CommandSender sender, @Nonnull EntityPlayer player, PlayerData playerData, List<String> argv) {
+    default public boolean apply(I18n i18n, CommandSource cmdSource, @Nonnull Player player, PlayerData playerData, List<String> argv) throws CommandSyntaxException {
         Selection selection = playerData.selection;
         
         int i = 0;
@@ -36,8 +38,9 @@ public interface ISelectionAction extends IPlayerAction {
                         String maskName = maskArgs.get(0);
 
                         @Nullable IMaskCommand maskCmd = Masks.MASKS.get(maskName);
-                        if (maskCmd == null)
-                            throw new CommandError(i18n.translateKeyAndFormat("bunyedit.cmd.mask.err.nosuchmask", maskName));                        
+                        if (maskCmd == null) {
+                            throw CommandExceptions.NO_SUCH_MASK.formatAndCreate(maskName);
+                        }
 
                         String[] maskArgv = {};
                         if (maskArgs.size() >= 1) {
@@ -49,7 +52,9 @@ public interface ISelectionAction extends IPlayerAction {
                         selection = new Selection(selection);
                         selection.setMask(argv.get(i), mask);
                     } catch (IndexOutOfBoundsException e) {
-                        throw new CommandError("-m: " + i18n.translateKey("bunyedit.cmd.err.toofewargs"));
+                        throw CommandExceptions
+                            .fromString("-m: " + i18n.translateKey("bunyedit.cmd.err.toofewargs"))
+                            .create();
                     }
                     argv.remove(i);
                     break;
@@ -59,15 +64,17 @@ public interface ISelectionAction extends IPlayerAction {
         }
 
         ValidSelection validSelection = ValidSelection.fromSelection(selection);
-        if (validSelection == null || !selection.getWorld().equals(player.world))
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.incompleteselection"));        
+        if (validSelection == null || !selection.getWorld().equals(player.world)) {
+            throw CommandExceptions.INCOMPLETE_SELECTION.create();
+        }
 
         Long limit = playerData.selectionLimit;
         if (limit != null) {
             long vol = validSelection.coordStream().count();
-            if (vol > limit)
-                throw new CommandError(i18n.translateKeyAndFormat("bunyedit.cmd.err.selectiontoolarge", vol));
+            if (vol > limit) {
+                throw CommandExceptions.SELECTION_TOO_LARGE.formatAndCreate(vol);
+            }
         }
-        return apply(i18n, sender, player, playerData, validSelection, argv);
+        return apply(i18n, cmdSource, player, playerData, validSelection, argv);
     }
 }

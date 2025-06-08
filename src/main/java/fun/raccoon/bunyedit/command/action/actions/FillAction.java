@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.command.action.ISelectionAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
@@ -18,10 +21,9 @@ import fun.raccoon.bunyedit.util.PosMath;
 import fun.raccoon.bunyedit.util.parsers.Bound;
 import fun.raccoon.bunyedit.util.parsers.Filter;
 import fun.raccoon.bunyedit.util.parsers.Pattern;
-import net.minecraft.core.entity.player.EntityPlayer;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
-import net.minecraft.core.net.command.CommandSender;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.util.collection.Pair;
 import net.minecraft.core.util.helper.Direction;
 import net.minecraft.core.world.World;
@@ -52,27 +54,34 @@ public class FillAction implements ISelectionAction {
 
     @Override
     public boolean apply(
-        I18n i18n, CommandSender sender, @Nonnull EntityPlayer player,
+        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
         PlayerData playerData, ValidSelection selection, List<String> argv
-    ) {
-        if (argv.size() < 2)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toofewargs"));
-        if (argv.size() > 3)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
-        
+    ) throws CommandSyntaxException {
+        if (argv.size() < 2) {
+            throw CommandExceptions.TOO_FEW_ARGS.create();
+        }
+        if (argv.size() > 3) {
+            throw CommandExceptions.TOO_MANY_ARGS.create();
+        }
+
         Predicate<BlockData> filter = Filter.fromString(argv.get(0));
-        if (filter == null)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidfilter"));   
-            
+        if (filter == null) {
+            throw CommandExceptions.INVALID_FILTER.create();
+        }
+
+        Player sender = cmdSource.getSender();
+        
         Function<BlockData, BlockData> pattern = Pattern.fromString(sender, argv.get(1));
-        if (pattern == null)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidpattern"));
-     
+        if (pattern == null) {
+            throw CommandExceptions.INVALID_PATTERN.create();
+        }
+
         Pair<ChunkPosition, ChunkPosition> bound;
         if (argv.size() == 3) {
             bound = Bound.fromString(selection, player, "*16,"+argv.get(2));
-            if (bound == null)
-                throw new CommandError(i18n.translateKey("bunyedit.cmd.err.invalidbound"));        
+            if (bound == null) {
+                throw CommandExceptions.INVALID_BOUND.create();
+            }
         } else {
             bound = Bound.fromString(selection, player, "*16");
         }

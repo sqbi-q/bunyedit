@@ -15,7 +15,8 @@ import com.google.common.base.Predicates;
 
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import net.minecraft.core.block.Block;
-import net.minecraft.core.block.material.LiquidMaterial;
+import net.minecraft.core.block.Blocks;
+import net.minecraft.core.block.material.MaterialLiquid;
 import net.minecraft.core.block.material.Material;
 import net.minecraft.core.block.material.MaterialColor;
 
@@ -87,7 +88,7 @@ public class Filter {
     private static @Nullable Predicate<BlockData> materialFilter(String materialFilterStr) {
         // ugh
         Material material;
-        Predicate<Block> p = null;
+        Predicate<Block<?>> p = null;
         switch (materialFilterStr) {
             case "grass": material = Material.grass; break;
             case "dirt": material = Material.dirt; break;
@@ -104,27 +105,27 @@ public class Filter {
             case "piston": material = Material.piston; break;
             case "snow":
                 material = null;
-                p = block -> block.blockMaterial.color.equals(MaterialColor.snow);
+                p = block -> block.getMaterialColor().equals(MaterialColor.snow);
                 break;
             case "liquid":
                 material = null;
-                p = block -> block.blockMaterial instanceof LiquidMaterial;
+                p = block -> block.getMaterial() instanceof MaterialLiquid;
                 break;
             default: return null;
         }
 
         if (material != null) {
-            p = block -> block.blockMaterial.equals(material);
+            p = block -> block.getMaterial().equals(material);
         }
 
         if (p == null)
             return null;
         
         // java is dumb
-        Predicate<Block> p_ = p;
+        Predicate<Block<?>> p_ = p;
 
         return blockData -> {
-            Block block = Block.getBlock(blockData.id);
+            Block<?> block = Blocks.getBlock(blockData.id);
             if (block == null)
                 return false;
             return p_.test(block);
@@ -162,7 +163,7 @@ public class Filter {
             int otherN = Integer.parseInt(blockIdsStr);
             return n -> n == otherN;
         } catch (NumberFormatException e) {
-            Set<Integer> blocks = Arrays.stream(Block.blocksList)
+            Set<Integer> blocks = Arrays.stream(Blocks.blocksList)
                 .filter(b -> {
                     if (b == null)
                         return false;
@@ -187,7 +188,7 @@ public class Filter {
                     }
 
                     return true;
-                }).map(block -> block.id).collect(Collectors.toSet());
+                }).map(block -> block.id()).collect(Collectors.toSet());
             
             if (blocks.isEmpty())
                 return null;

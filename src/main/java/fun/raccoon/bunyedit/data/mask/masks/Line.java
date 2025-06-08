@@ -5,11 +5,12 @@ import java.util.function.BiPredicate;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.data.mask.IMaskCommand;
 import fun.raccoon.bunyedit.data.mask.IterativeMask;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
-import net.minecraft.core.lang.I18n;
-import net.minecraft.core.net.command.CommandError;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class Line implements IMaskCommand {
@@ -56,11 +57,11 @@ public class Line implements IMaskCommand {
         return "";
     }
 
-    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) {
-        I18n i18n = I18n.getInstance();
-        if (argv.length > 0)
-            throw new CommandError(i18n.translateKey("bunyedit.cmd.err.toomanyargs"));
-        
+    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) throws CommandSyntaxException {
+        if (argv.length > 0) {
+            throw CommandExceptions.TOO_MANY_ARGS.create();
+        }
+
         return new LineInner();
     }
 }
