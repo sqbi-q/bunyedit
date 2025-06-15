@@ -1,51 +1,74 @@
 package fun.raccoon.bunyedit.command.action.actions;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.ArgumentTypeLong;
+import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
+import com.mojang.brigadier.builder.ArgumentBuilderRequired;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import fun.raccoon.bunyedit.command.CommandExceptions;
-import fun.raccoon.bunyedit.command.action.IPlayerAction;
+import fun.raccoon.bunyedit.command.action.ICommandAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
 
-public class LimitAction implements IPlayerAction {
-    @Override
-    public boolean apply(
-        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
-        PlayerData playerData, List<String> argv
-    ) throws CommandSyntaxException {
-        switch (argv.size()) {
-            case 0:
-                cmdSource.getSender()
-                    .sendMessage(i18n.translateKeyAndFormat(
-                        "bunyedit.cmd.limit.print", playerData.selectionLimit
-                    ));
-                break;
+public class LimitAction extends ICommandAction {
 
+    public int sendCurrentLimit(@Nonnull Player player) {
+        I18n i18n = I18n.getInstance();
+        PlayerData playerData = PlayerData.get(player);
+
+        player.sendMessage(i18n.translateKeyAndFormat(
+            "bunyedit.cmd.limit.print", playerData.selectionLimit
+        ));
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    public int apply(@Nonnull Player player, Long newLimit) throws CommandSyntaxException {
+        I18n i18n = I18n.getInstance();
+        PlayerData playerData = PlayerData.get(player);
+
+        // TODO limit = long(min 0) | "no"
+        /*
             case 1:
                 if (argv.get(0).equals("no")) {
                     playerData.selectionLimit = null;
                 } else {
-                    long newLimit;
-                    try {
-                        newLimit = Long.parseLong(argv.get(0));
-                        if (newLimit < 0)
-                            throw new NumberFormatException();
-                    } catch (NumberFormatException e) {
-                        throw CommandExceptions.INVALID_NUMBER.create();
-                    }
-                    playerData.selectionLimit = newLimit;
-                }
+        */
 
-                cmdSource.getSender().sendMessage(i18n.translateKey("bunyedit.cmd.limit.success"));
-                break;
-        }
+        playerData.selectionLimit = newLimit;
 
-        return true;
+        player.sendMessage(i18n.translateKey(
+            "bunyedit.cmd.limit.success"
+        ));
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public void register(CommandDispatcher<CommandSource> commandDispatcher) {
+        commandDispatcher.register(ArgumentBuilderLiteral
+            .<CommandSource>literal("/limit")
+            .executes(PermissionedCommand
+                .process(
+                    c -> sendCurrentLimit(c.getSource().getSender())
+                )
+            )
+            .then(ArgumentBuilderRequired
+                .<CommandSource, Long>argument(
+                    "new-limit", ArgumentTypeLong.longArg(0)
+                )
+                .executes(PermissionedCommand
+                    .process(c -> apply(
+                        c.getSource().getSender(),
+                        c.getArgument("new-limit", Long.class)
+                    ))
+                )
+            )
+        );
     }
 }

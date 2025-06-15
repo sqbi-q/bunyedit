@@ -37,8 +37,13 @@ public class BlockData {
         this.nbt = null;
     }
 
-    public BlockData(Block<?> block) {
-        this.id = block.id();
+    public BlockData(@Nullable Block<?> block) {
+        // Null block is basically air
+        if (block == null) {
+            this.id = 0;
+        } else {
+            this.id = block.id();
+        }
         this.meta = 0;
         this.nbt = null;
     }

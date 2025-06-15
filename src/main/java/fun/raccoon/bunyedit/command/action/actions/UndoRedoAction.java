@@ -1,13 +1,14 @@
 package fun.raccoon.bunyedit.command.action.actions;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import fun.raccoon.bunyedit.command.CommandExceptions;
-import fun.raccoon.bunyedit.command.action.IPlayerAction;
+import fun.raccoon.bunyedit.command.action.ICommandAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
 import fun.raccoon.bunyedit.data.buffer.EntityBuffer;
@@ -17,38 +18,28 @@ import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
 
-public class UndoRedoAction implements IPlayerAction {
+public class UndoRedoAction extends ICommandAction {
     public enum Which {
         UNDO,
         REDO
     }
 
-    private Which which;
-
-    public UndoRedoAction(Which which) {
-        this.which = which;
-    }
-
-    @Override
-    public boolean apply(
-        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
-        PlayerData playerData, List<String> argv
-    ) throws CommandSyntaxException {
-        if (argv.size() > 0) {
-            throw CommandExceptions.TOO_MANY_ARGS.create();
-        }
+    public int apply(@Nonnull Player player, Which whichDirection) 
+    throws CommandSyntaxException {
+        I18n i18n = I18n.getInstance();
+        PlayerData playerData = PlayerData.get(player);
 
         UndoTape undoTape = playerData.getUndoTape(player.world);
-        UndoPage page = this.which.equals(Which.UNDO)
+        UndoPage page = whichDirection.equals(Which.UNDO)
             ? undoTape.undo()
             : undoTape.redo();
 
         if (page == null) {
-            String whichI18n = i18n.translateKey(this.which.equals(Which.UNDO)
+            String whichDirectionI18n = i18n.translateKey(whichDirection.equals(Which.UNDO)
                 ? "bunyedit.cmd.undoredo.undo"
                 : "bunyedit.cmd.undoredo.redo");
 
-            throw CommandExceptions.NO_PAGES.formatAndCreate(whichI18n);
+            throw CommandExceptions.NO_PAGES.formatAndCreate(whichDirectionI18n);
         }
 
         BlockBuffer newBlocks = page.getRight().blocks;
@@ -64,6 +55,26 @@ public class UndoRedoAction implements IPlayerAction {
         oldEnts.destroyIn(player.world);
         newEnts.createIn(player.world);
 
-        return true;
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public void register(CommandDispatcher<CommandSource> commandDispatcher) {
+        commandDispatcher.register(ArgumentBuilderLiteral
+            .<CommandSource>literal("/undo")
+            .executes(PermissionedCommand
+                .process(
+                    c -> apply(c.getSource().getSender(), Which.UNDO)
+                )
+            )
+        );
+        commandDispatcher.register(ArgumentBuilderLiteral
+            .<CommandSource>literal("/redo")
+            .executes(PermissionedCommand
+                .process(
+                    c -> apply(c.getSource().getSender(), Which.REDO)
+                )
+            )
+        );
     }
 }

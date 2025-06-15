@@ -1,34 +1,50 @@
 package fun.raccoon.bunyedit.command.action.actions;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import fun.raccoon.bunyedit.command.CommandExceptions;
-import fun.raccoon.bunyedit.command.action.ISelectionAction;
+import fun.raccoon.bunyedit.command.action.ICommandAction;
 import fun.raccoon.bunyedit.data.PlayerData;
-import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.ChatString;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
 
-public class GetSelectionAction implements ISelectionAction {
-    @Override
-    public boolean apply(
-        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
-        PlayerData playerData, ValidSelection selection, List<String> argv
-    ) throws CommandSyntaxException {
-        if (argv.size() > 0) {
-            throw CommandExceptions.TOO_MANY_ARGS.create();
-        }
+public class GetSelectionAction extends ICommandAction {
 
-        cmdSource.getSender().sendMessage(String.format("%s: %s",
+    public int apply(@Nonnull Player player) throws CommandSyntaxException {
+        I18n i18n = I18n.getInstance();
+        PlayerData playerData = PlayerData.get(player);
+
+        player.sendMessage(String.format("%s: %s",
             i18n.translateKey("bunyedit.selection"),
             ChatString.gen(playerData.selection)));
 
-        return true;
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public void register(CommandDispatcher<CommandSource> commandDispatcher) {
+        final LiteralCommandNode<CommandSource> selectionNode = commandDispatcher
+            .register(ArgumentBuilderLiteral
+                .<CommandSource>literal("/selection")
+                .executes(PermissionedCommand
+                    .process(
+                        c -> apply(c.getSource().getSender())
+                    )
+                )
+            );
+
+        commandDispatcher.register(ArgumentBuilderLiteral
+            .<CommandSource>literal("/sel")
+            /* Brigadier will only redirect command nodes with arguments (Issue #46) */
+            .executes(selectionNode.getCommand())
+            .redirect(selectionNode)
+        );
     }
 }

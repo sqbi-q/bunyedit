@@ -15,8 +15,6 @@ import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.player.gamemode.Gamemode;
 
-// TODO normalize all IAction subtypes - eg. player is already known in CommandSource
-
 public interface IPlayerAction extends IAction {
     public boolean apply(I18n i18n, CommandSource cmdSource, @Nonnull Player player, PlayerData playerData, List<String> argv) throws CommandSyntaxException;
 

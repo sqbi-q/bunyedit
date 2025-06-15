@@ -21,17 +21,20 @@ public class BlockBuffer extends HashMap<ChunkPosition, BlockData> {
     public void placeRaw(World world, ChunkPosition pos, BlockData blockData) {
         this.put(pos, blockData);
 
-        TileEntity entityFromNBT = new TileEntity();
-        entityFromNBT.readFromNBT(blockData.nbt);
+        
 
         world.setBlockRaw(pos.x, pos.y, pos.z, blockData.id);
         world.setBlockMetadata(pos.x, pos.y, pos.z, blockData.meta);
-        if (blockData.nbt != null)
+        if (blockData.nbt != null) {
+            TileEntity entityFromNBT = new TileEntity();
+            entityFromNBT.readFromNBT(blockData.nbt);
+
             world.setTileEntity(
                 pos.x, pos.y, pos.z,
                 // TileEntity.createAndLoadEntity(blockData.nbt)
                 entityFromNBT
             );
+        }
     }
 
     public void finalize(World world) {

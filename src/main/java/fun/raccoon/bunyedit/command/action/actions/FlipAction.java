@@ -21,6 +21,8 @@ import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.util.helper.Axis;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
+// TODO port to ICommandAction
+
 public class FlipAction implements ISelectionAction {
     @Override
     public boolean apply(

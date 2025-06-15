@@ -7,6 +7,25 @@ group = project.mod_group
 archivesBaseName = project.mod_name
 version = project.mod_version
 
+// Implement LWJGL for development runtime, so it can find liblwjgl
+
+import org.gradle.internal.os.OperatingSystem
+project.ext.lwjglVersion = "3.3.3"
+
+switch (OperatingSystem.current()) {
+	case OperatingSystem.LINUX:
+		project.ext.lwjglNatives = "natives-linux"
+		break
+	case OperatingSystem.WINDOWS:
+		project.ext.lwjglNatives = "natives-windows"
+		break
+	case OperatingSystem.MAC_OS:
+		project.ext.lwjglNatives = "natives-macos"
+}
+
+//
+
+
 loom {
 	noIntermediateMappings()
 	customMinecraftManifest.set("https://downloads.betterthanadventure.net/bta-client/${project.bta_channel}/v${project.bta_version}/manifest.json")
@@ -98,6 +117,9 @@ dependencies {
 	implementation("org.apache.logging.log4j:log4j-core:${log4jVersion}")
 	implementation("org.apache.logging.log4j:log4j-api:${log4jVersion}")
 	implementation("org.apache.logging.log4j:log4j-1.2-api:${log4jVersion}")
+
+	implementation "org.lwjgl:lwjgl:$lwjglVersion"
+	runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
 }
 
 java {

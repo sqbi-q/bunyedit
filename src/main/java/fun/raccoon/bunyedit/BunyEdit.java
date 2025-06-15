@@ -30,6 +30,22 @@ public class BunyEdit implements ModInitializer {
 
     private void registerCommands() {
         CommandManager.registerCommand(new CursorAction());
+        CommandManager.registerCommand(new SetSelectionAction());   // TODO port local coordinates (^) for type coords
+        CommandManager.registerCommand(new UndoRedoAction());
+        CommandManager.registerCommand(new MoveAction());           // TODO port local coordinates (^) for type coords
+        CommandManager.registerCommand(new CopyAction());
+        CommandManager.registerCommand(new PasteAction());
+
+        CommandManager.registerCommand(new GetSelectionAction());
+        CommandManager.registerCommand(new GrowSelectionAction());  // TODO port Bound parser
+        CommandManager.registerCommand(new LimitAction());
+        CommandManager.registerCommand(new MoveSelAction());        // TODO port local coordinates (^) for type coords 
+        CommandManager.registerCommand(new SetAction());            // TODO port pattern and filter parameters 
+        CommandManager.registerCommand(new SetMaskAction());        // TODO masks flags
+        CommandManager.registerCommand(new StackAction());          // TODO port local coordinates (offset) and direction
+
+        // CommandManager.registerCommand(new FillAction());        // TODO
+        // CommandManager.registerCommand(new FlipAction());        // TODO
     }
 
     @Override

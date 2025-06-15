@@ -1,14 +1,19 @@
 package fun.raccoon.bunyedit.command.action.actions;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.ArgumentTypeInteger;
+import com.mojang.brigadier.arguments.ArgumentTypeString;
+import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
+import com.mojang.brigadier.builder.ArgumentBuilderRequired;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import fun.raccoon.bunyedit.command.CommandExceptions;
-import fun.raccoon.bunyedit.command.action.ISelectionAction;
+import fun.raccoon.bunyedit.command.action.ICommandAction;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
 import fun.raccoon.bunyedit.data.buffer.BlockData;
@@ -16,23 +21,23 @@ import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.DirectionHelper;
 import fun.raccoon.bunyedit.util.PosMath;
-import fun.raccoon.bunyedit.util.parsers.RelCoords;
 import net.minecraft.core.entity.player.Player;
-import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
+import net.minecraft.core.net.command.arguments.ArgumentTypeIntegerCoordinates;
+import net.minecraft.core.net.command.helpers.IntegerCoordinates;
 import net.minecraft.core.util.helper.Direction;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
-public class StackAction implements ISelectionAction {
-    @Override
-    public boolean apply(
-        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
-        PlayerData playerData, ValidSelection selection, List<String> argv
-    ) throws CommandSyntaxException {
-        if (argv.size() > 3) {
-            throw CommandExceptions.TOO_MANY_ARGS.create();
-        }
+public class StackAction extends ICommandAction {
 
+    public int apply(
+        @Nonnull Player player, int times, String directionInput, IntegerCoordinates offsetInput
+    ) throws CommandSyntaxException {
+        
+        PlayerData playerData = PlayerData.get(player);
+        ValidSelection selection = validSelectionFrom(player);
+
+        /*
         LookDirection lookDir = new LookDirection(player);
 
         Direction direction = DirectionHelper.from(lookDir);
@@ -58,6 +63,31 @@ public class StackAction implements ISelectionAction {
         }
         if (argv.size() == 3) {
             offset = RelCoords.from(offset, lookDir, argv.get(2));
+        }
+        */
+
+        Direction direction;
+
+        if (directionInput == "^") {
+            direction = DirectionHelper.from(new LookDirection(player));
+        }
+        else {
+            direction = DirectionHelper.fromAbbrev(directionInput.toUpperCase());
+        }
+        
+        if (direction == null) {
+            throw CommandExceptions.INVALID_DIRECTION.create();
+        }
+
+        // TODO port offset and direction
+        ChunkPosition offset = PosMath.all(0);
+
+        if (offsetInput != null) {
+            offset = new ChunkPosition(
+                offsetInput.getX(0),
+                offsetInput.getY(0),
+                offsetInput.getZ(0)
+            );
         }
         
         ChunkPosition s1 = playerData.selection.getPrimary();
@@ -90,6 +120,59 @@ public class StackAction implements ISelectionAction {
 
         playerData.getUndoTape(player.world).push(before, after);
 
-        return true;
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public void register(CommandDispatcher<CommandSource> commandDispatcher) {
+        // TODO neater way to handle argument layers
+
+        commandDispatcher.register(ArgumentBuilderLiteral
+            .<CommandSource>literal("/stack")
+            .executes(PermissionedCommand
+                .process(c -> apply(
+                    c.getSource().getSender(),
+                    1, "^", null
+                ))
+            )
+            .then(ArgumentBuilderRequired
+                .<CommandSource, Integer>argument(
+                    "times", ArgumentTypeInteger.integer(0)
+                )
+                .executes(PermissionedCommand
+                    .process(c -> apply(
+                        c.getSource().getSender(),
+                        c.getArgument("times", Integer.class),
+                        "^", null
+                    ))
+                )
+                .then(ArgumentBuilderRequired
+                    .<CommandSource, String>argument(
+                        "direction", ArgumentTypeString.string()
+                    )
+                    .executes(PermissionedCommand
+                        .process(c -> apply(
+                            c.getSource().getSender(),
+                            c.getArgument("times", Integer.class),
+                            c.getArgument("direction", String.class),
+                            null
+                        ))
+                    )
+                    .then(ArgumentBuilderRequired
+                        .<CommandSource, IntegerCoordinates>argument(
+                            "offset", ArgumentTypeIntegerCoordinates.intCoordinates()
+                        )
+                        .executes(PermissionedCommand
+                            .process(c -> apply(
+                                c.getSource().getSender(),
+                                c.getArgument("times", Integer.class),
+                                c.getArgument("direction", String.class),
+                                c.getArgument("offset", IntegerCoordinates.class)
+                            ))
+                        )
+                    )
+                )
+            )
+        );
     }
 }
