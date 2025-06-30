@@ -29,23 +29,26 @@ public class BunyEdit implements ModInitializer {
     }
 
     private void registerCommands() {
+        // TODO think about -m flag
+        // TODO suggestions for each custom ArgumentType
+
         CommandManager.registerCommand(new CursorAction());
-        CommandManager.registerCommand(new SetSelectionAction());   // TODO port local coordinates (^) for type coords
+        CommandManager.registerCommand(new SetSelectionAction());
         CommandManager.registerCommand(new UndoRedoAction());
-        CommandManager.registerCommand(new MoveAction());           // TODO port local coordinates (^) for type coords
+        CommandManager.registerCommand(new MoveAction());
         CommandManager.registerCommand(new CopyAction());
         CommandManager.registerCommand(new PasteAction());
 
         CommandManager.registerCommand(new GetSelectionAction());
-        CommandManager.registerCommand(new GrowSelectionAction());  // TODO port Bound parser
+        CommandManager.registerCommand(new GrowSelectionAction());
         CommandManager.registerCommand(new LimitAction());
-        CommandManager.registerCommand(new MoveSelAction());        // TODO port local coordinates (^) for type coords 
-        CommandManager.registerCommand(new SetAction());            // TODO port pattern and filter parameters 
-        CommandManager.registerCommand(new SetMaskAction());        // TODO masks flags
-        CommandManager.registerCommand(new StackAction());          // TODO port local coordinates (offset) and direction
+        CommandManager.registerCommand(new MoveSelAction());
+        CommandManager.registerCommand(new SetAction());
+        CommandManager.registerCommand(new SetMaskAction());
+        CommandManager.registerCommand(new StackAction());
 
         // CommandManager.registerCommand(new FillAction());        // TODO
-        // CommandManager.registerCommand(new FlipAction());        // TODO
+        CommandManager.registerCommand(new FlipAction());
     }
 
     @Override

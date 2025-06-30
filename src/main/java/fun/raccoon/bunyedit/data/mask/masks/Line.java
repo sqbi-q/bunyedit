@@ -5,12 +5,15 @@ import java.util.function.BiPredicate;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import fun.raccoon.bunyedit.command.CommandExceptions;
+import fun.raccoon.bunyedit.command.action.ICommandAction.PermissionedCommand;
 import fun.raccoon.bunyedit.data.mask.IMaskCommand;
 import fun.raccoon.bunyedit.data.mask.IterativeMask;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class Line implements IMaskCommand {
@@ -53,15 +56,29 @@ public class Line implements IMaskCommand {
         }
     }
 
+    @Override
+    public Arguments getArguments(CommandContext<CommandSource> ctx) {
+        return new Arguments() {};
+    }
+
     public String usage() {
         return "";
     }
 
-    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) throws CommandSyntaxException {
-        if (argv.length > 0) {
-            throw CommandExceptions.TOO_MANY_ARGS.create();
-        }
+    public ArgumentBuilderLiteral<CommandSource> addToCommandBuilder(
+        String literalName,
+        ArgumentBuilderLiteral<CommandSource> builder,
+        PermissionedCommand onExecute
+    ) {
+        return builder
+            .then(getCommandLiteral(literalName)
+                .executes(onExecute)
+            );
+    }
 
+    @Override
+    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(Arguments args) 
+    throws CommandSyntaxException {
         return new LineInner();
     }
 }

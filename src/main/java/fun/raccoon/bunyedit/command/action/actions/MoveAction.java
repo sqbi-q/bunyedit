@@ -9,41 +9,30 @@ import com.mojang.brigadier.builder.ArgumentBuilderRequired;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import fun.raccoon.bunyedit.command.action.ICommandAction;
+import fun.raccoon.bunyedit.command.action.arguments.ArgumentTypeCoords;
+import fun.raccoon.bunyedit.command.action.arguments.Coords;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import fun.raccoon.bunyedit.data.buffer.WorldBuffer;
+import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.PosMath;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.net.command.CommandSource;
-import net.minecraft.core.net.command.arguments.ArgumentTypeIntegerCoordinates;
-import net.minecraft.core.net.command.helpers.IntegerCoordinates;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
     // TODO: actually implement entity copying
 public class MoveAction extends ICommandAction {
 
-    public int apply(@Nonnull Player player, IntegerCoordinates position)
+    public int apply(@Nonnull Player player, Coords position)
     throws CommandSyntaxException {
         
         PlayerData playerData = PlayerData.get(player);
         ValidSelection selection = validSelectionFrom(player);
 
         ChunkPosition copyOrigin = selection.getPrimary();
-
-        ChunkPosition pasteOrigin = new ChunkPosition(
-            position.getX(copyOrigin.x),
-            position.getY(copyOrigin.y),
-            position.getZ(copyOrigin.z)
-        );
-
-        // TODO port local coordinates (^) for type coords
-        /*
-            case 1:
-                pasteOrigin = RelCoords.from(copyOrigin, new LookDirection(player), argv.get(0));
-                break;
-        */
+        ChunkPosition pasteOrigin = position.asAbsolute(copyOrigin, new LookDirection(player));
 
         BlockData air = new BlockData();
 
@@ -89,13 +78,13 @@ public class MoveAction extends ICommandAction {
         commandDispatcher.register(ArgumentBuilderLiteral
             .<CommandSource>literal("/move")
             .then(ArgumentBuilderRequired
-                .<CommandSource, IntegerCoordinates>argument(
-                    "position", ArgumentTypeIntegerCoordinates.intCoordinates()
+                .<CommandSource, Coords>argument(
+                    "position", new ArgumentTypeCoords()
                 )
                 .executes(PermissionedCommand
                     .process(c -> apply(
                         c.getSource().getSender(),
-                        c.getArgument("position", IntegerCoordinates.class)
+                        c.getArgument("position", Coords.class)
                     ))
                 )
             )

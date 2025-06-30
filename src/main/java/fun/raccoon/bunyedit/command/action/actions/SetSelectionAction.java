@@ -10,13 +10,14 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import fun.raccoon.bunyedit.command.action.ICommandAction;
+import fun.raccoon.bunyedit.command.action.arguments.ArgumentTypeCoords;
+import fun.raccoon.bunyedit.command.action.arguments.Coords;
 import fun.raccoon.bunyedit.data.PlayerData;
+import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.data.selection.Selection.Slot;
 import fun.raccoon.bunyedit.util.ChatString;
 import fun.raccoon.bunyedit.util.parsers.RelCoords;
 import net.minecraft.core.entity.player.Player;
-import net.minecraft.core.net.command.arguments.ArgumentTypeIntegerCoordinates;
-import net.minecraft.core.net.command.helpers.IntegerCoordinates;
 import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
@@ -42,18 +43,14 @@ public class SetSelectionAction extends ICommandAction {
     }
 
     private int applyCommandOnSlot(
-        CommandContext<CommandSource> context, Slot slot, IntegerCoordinates position
+        CommandContext<CommandSource> context, Slot slot, Coords position
     ) throws CommandSyntaxException {
         assertPermission(context);
 
         Player player = context.getSource().getSender();
 
-        // TODO port local coordinates (^) for type coords
-        ChunkPosition pos = new ChunkPosition(
-            position.getX(player.x),
-            position.getY(player.y),
-            position.getZ(player.z)
-        );
+        ChunkPosition origin = RelCoords.playerPos(player, false);
+        ChunkPosition pos = position.asAbsolute(origin, new LookDirection(player));
 
         return apply(player, slot, pos);
     }
@@ -67,11 +64,13 @@ public class SetSelectionAction extends ICommandAction {
             )
             .then(
                 ArgumentBuilderRequired
-                .<CommandSource, IntegerCoordinates>argument(
-                    "position", ArgumentTypeIntegerCoordinates.intCoordinates()
+                .<CommandSource, Coords>argument(
+                    "position", new ArgumentTypeCoords()
                 )
-                .executes(c -> applyCommandOnSlot(c, Slot.PRIMARY,
-                    c.getArgument("position", IntegerCoordinates.class))
+                .executes(c -> applyCommandOnSlot(
+                    c, Slot.PRIMARY,
+                    c.getArgument("position", Coords.class
+                ))
                 )
             )
         );
@@ -83,12 +82,13 @@ public class SetSelectionAction extends ICommandAction {
             )
             .then(
                 ArgumentBuilderRequired
-                .<CommandSource, IntegerCoordinates>argument(
-                    "position", ArgumentTypeIntegerCoordinates.intCoordinates()
+                .<CommandSource, Coords>argument(
+                    "position", new ArgumentTypeCoords()
                 )
-                .executes(c -> applyCommandOnSlot(c, Slot.SECONDARY,
-                    c.getArgument("position", IntegerCoordinates.class))
-                )
+                .executes(c -> applyCommandOnSlot(
+                    c, Slot.SECONDARY,
+                    c.getArgument("position", Coords.class)
+                ))
             )
         );
     }

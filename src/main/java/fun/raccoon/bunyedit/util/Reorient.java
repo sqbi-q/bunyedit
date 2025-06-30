@@ -36,6 +36,10 @@ public class Reorient {
         Block<?> block = Blocks.getBlock(blockData.id);
         int meta = blockData.meta;
 
+        if (block == null) { // air.
+            return blockData;
+        }
+
         if (block.getLogic() instanceof BlockLogicStairs) {
             if (axis.equals(Axis.X) && (meta&2)==0)
                 meta ^= 1;

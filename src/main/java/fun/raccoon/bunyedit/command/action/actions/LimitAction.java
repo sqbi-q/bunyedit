@@ -1,6 +1,7 @@
 package fun.raccoon.bunyedit.command.action.actions;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -21,6 +22,7 @@ public class LimitAction extends ICommandAction {
         I18n i18n = I18n.getInstance();
         PlayerData playerData = PlayerData.get(player);
 
+        // TODO message when selectionLimit == null
         player.sendMessage(i18n.translateKeyAndFormat(
             "bunyedit.cmd.limit.print", playerData.selectionLimit
         ));
@@ -28,17 +30,9 @@ public class LimitAction extends ICommandAction {
         return Command.SINGLE_SUCCESS;
     }
 
-    public int apply(@Nonnull Player player, Long newLimit) throws CommandSyntaxException {
+    public int apply(@Nonnull Player player, @Nullable Long newLimit) throws CommandSyntaxException {
         I18n i18n = I18n.getInstance();
         PlayerData playerData = PlayerData.get(player);
-
-        // TODO limit = long(min 0) | "no"
-        /*
-            case 1:
-                if (argv.get(0).equals("no")) {
-                    playerData.selectionLimit = null;
-                } else {
-        */
 
         playerData.selectionLimit = newLimit;
 
@@ -60,13 +54,24 @@ public class LimitAction extends ICommandAction {
             )
             .then(ArgumentBuilderRequired
                 .<CommandSource, Long>argument(
-                    "new-limit", ArgumentTypeLong.longArg(0)
+                    "new-limit-or-no", ArgumentTypeLong.longArg(0)
                 )
                 .executes(PermissionedCommand
                     .process(c -> apply(
                         c.getSource().getSender(),
-                        c.getArgument("new-limit", Long.class)
+                        c.getArgument("new-limit-or-no", Long.class)
                     ))
+                )
+            )
+            .then(ArgumentBuilderLiteral
+                .<CommandSource>literal("no")
+                .executes(PermissionedCommand
+                    .process(
+                        c -> apply(
+                            c.getSource().getSender(),
+                            null
+                        )
+                    )
                 )
             )
         );

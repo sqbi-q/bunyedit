@@ -6,14 +6,73 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.arguments.ArgumentTypeBool;
+import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
+import com.mojang.brigadier.builder.ArgumentBuilderRequired;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import fun.raccoon.bunyedit.command.CommandExceptions;
+import fun.raccoon.bunyedit.command.action.ICommandAction.PermissionedCommand;
 import fun.raccoon.bunyedit.data.mask.IMaskCommand;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
+import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class Ellipsoid implements IMaskCommand {
+
+    private class EllipsoidArguments extends Arguments {
+        @Override
+        public Arguments handleContext(CommandContext<CommandSource> ctx) {
+            boolean isHollow = false;
+            try {
+                isHollow = ctx.getArgument("is-hollow", Boolean.class);
+            } 
+            catch (IllegalArgumentException e) {}
+            
+            argsMap.put("is-hollow", isHollow);
+            if (isHollow) argsInlineName += "hollow ";
+
+            return this;
+        }
+    }
+    @Override
+    public Arguments getArguments(CommandContext<CommandSource> ctx) {
+        return new EllipsoidArguments().handleContext(ctx);
+    }
+
+
+    @Override
+    public ArgumentBuilderLiteral<CommandSource> addToCommandBuilder(
+        String literalName,
+        ArgumentBuilderLiteral<CommandSource> builder,
+        PermissionedCommand onExecute
+    ) {
+        return builder
+            .then(getCommandLiteral(literalName)
+                .executes(onExecute)
+                .then(ArgumentBuilderRequired
+                    .<CommandSource, Boolean>argument(
+                        "is-hollow", ArgumentTypeBool.bool()
+                    )
+                    .executes(onExecute)
+                )
+            );
+    }
+
+
+    @Override
+    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(
+        Arguments args
+    ) throws CommandSyntaxException {
+
+        boolean isHollow = (Boolean) args.argsMap.getOrDefault(
+            "is-hollow", false
+        );
+
+        return p(isHollow);
+    }
+
+
     private static boolean inside(
         double a, double b, double c,
         double x, double y, double z
@@ -27,21 +86,6 @@ public class Ellipsoid implements IMaskCommand {
 
     public String usage() {
         return "[h]";
-    }
-
-    public @Nonnull BiPredicate<ValidSelection, ChunkPosition> build(String[] argv) throws CommandSyntaxException {
-        switch (argv.length) {
-            case 0:
-                return p(false);
-            case 1:
-                if (!argv[0].equals("h")) {
-                    throw CommandExceptions.INVALID_HOLLOW.create();
-                    
-                }
-                return p(true);
-            default:
-                throw CommandExceptions.TOO_MANY_ARGS.create();
-        }
     }
 
     public static @Nonnull BiPredicate<ValidSelection, ChunkPosition> p(boolean hollow) {

@@ -7,87 +7,43 @@ import javax.annotation.Nonnull;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentTypeInteger;
-import com.mojang.brigadier.arguments.ArgumentTypeString;
 import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
 import com.mojang.brigadier.builder.ArgumentBuilderRequired;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import fun.raccoon.bunyedit.command.CommandExceptions;
 import fun.raccoon.bunyedit.command.action.ICommandAction;
+import fun.raccoon.bunyedit.command.action.arguments.ArgumentTypeBunyDirection;
+import fun.raccoon.bunyedit.command.action.arguments.ArgumentTypeCoords;
+import fun.raccoon.bunyedit.command.action.arguments.BunyDirection;
+import fun.raccoon.bunyedit.command.action.arguments.Coords;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
-import fun.raccoon.bunyedit.util.DirectionHelper;
 import fun.raccoon.bunyedit.util.PosMath;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.net.command.CommandSource;
-import net.minecraft.core.net.command.arguments.ArgumentTypeIntegerCoordinates;
-import net.minecraft.core.net.command.helpers.IntegerCoordinates;
 import net.minecraft.core.util.helper.Direction;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class StackAction extends ICommandAction {
 
     public int apply(
-        @Nonnull Player player, int times, String directionInput, IntegerCoordinates offsetInput
+        @Nonnull Player player, int times, BunyDirection directionInput, Coords offsetInput
     ) throws CommandSyntaxException {
         
         PlayerData playerData = PlayerData.get(player);
         ValidSelection selection = validSelectionFrom(player);
-
-        /*
         LookDirection lookDir = new LookDirection(player);
 
-        Direction direction = DirectionHelper.from(lookDir);
-        int times = 1;
-        ChunkPosition offset = PosMath.all(0);
-        if (argv.size() >= 1) {
-            try {
-                times = Integer.parseInt(argv.get(0));
-            } catch (NumberFormatException e) {
-                throw CommandExceptions.INVALID_NUMBER.create();
-            }
-            if (times < 0) {
-                throw CommandExceptions.INVALID_NUMBER.create();
-            }
-        }
-        if (argv.size() >= 2) {
-            if (!argv.get(1).equals("^")) {
-                direction = DirectionHelper.fromAbbrev(argv.get(1).toUpperCase());
-                if (direction == null) {
-                    throw CommandExceptions.INVALID_DIRECTION.create();
-                }
-            }
-        }
-        if (argv.size() == 3) {
-            offset = RelCoords.from(offset, lookDir, argv.get(2));
-        }
-        */
+        Direction direction = directionInput.getDirection(lookDir);
 
-        Direction direction;
-
-        if (directionInput == "^") {
-            direction = DirectionHelper.from(new LookDirection(player));
-        }
-        else {
-            direction = DirectionHelper.fromAbbrev(directionInput.toUpperCase());
-        }
-        
-        if (direction == null) {
-            throw CommandExceptions.INVALID_DIRECTION.create();
-        }
-
-        // TODO port offset and direction
         ChunkPosition offset = PosMath.all(0);
 
         if (offsetInput != null) {
-            offset = new ChunkPosition(
-                offsetInput.getX(0),
-                offsetInput.getY(0),
-                offsetInput.getZ(0)
-            );
+            // Will treat absolute and relative coords the same, is this intended?
+            offset = offsetInput.asAbsolute(PosMath.all(0), lookDir);
         }
         
         ChunkPosition s1 = playerData.selection.getPrimary();
@@ -132,7 +88,7 @@ public class StackAction extends ICommandAction {
             .executes(PermissionedCommand
                 .process(c -> apply(
                     c.getSource().getSender(),
-                    1, "^", null
+                    1, BunyDirection.playerDirection(), null
                 ))
             )
             .then(ArgumentBuilderRequired
@@ -143,31 +99,31 @@ public class StackAction extends ICommandAction {
                     .process(c -> apply(
                         c.getSource().getSender(),
                         c.getArgument("times", Integer.class),
-                        "^", null
+                        BunyDirection.playerDirection(), null
                     ))
                 )
                 .then(ArgumentBuilderRequired
-                    .<CommandSource, String>argument(
-                        "direction", ArgumentTypeString.string()
+                    .<CommandSource, BunyDirection>argument(
+                        "direction", new ArgumentTypeBunyDirection()
                     )
                     .executes(PermissionedCommand
                         .process(c -> apply(
                             c.getSource().getSender(),
                             c.getArgument("times", Integer.class),
-                            c.getArgument("direction", String.class),
+                            c.getArgument("direction", BunyDirection.class),
                             null
                         ))
                     )
                     .then(ArgumentBuilderRequired
-                        .<CommandSource, IntegerCoordinates>argument(
-                            "offset", ArgumentTypeIntegerCoordinates.intCoordinates()
+                        .<CommandSource, Coords>argument(
+                            "offset", new ArgumentTypeCoords()
                         )
                         .executes(PermissionedCommand
                             .process(c -> apply(
                                 c.getSource().getSender(),
                                 c.getArgument("times", Integer.class),
-                                c.getArgument("direction", String.class),
-                                c.getArgument("offset", IntegerCoordinates.class)
+                                c.getArgument("direction", BunyDirection.class),
+                                c.getArgument("offset", Coords.class)
                             ))
                         )
                     )

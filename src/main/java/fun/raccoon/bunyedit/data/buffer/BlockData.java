@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.mojang.nbt.tags.CompoundTag;
 
 import net.minecraft.core.block.Block;
+import net.minecraft.core.block.Blocks;
 import net.minecraft.core.block.entity.TileEntity;
 import net.minecraft.core.world.World;
 import net.minecraft.core.world.chunk.ChunkPosition;
@@ -71,6 +72,13 @@ public class BlockData {
 
     public BlockData(World world, ChunkPosition pos) {
         this(world, pos.x, pos.y, pos.z);
+    }
+
+    /**
+     * Get `Block` block by id from list of blocks.
+     */
+    public @Nullable Block<?> getBlock() {
+        return Blocks.getBlock(id);
     }
 
     /**

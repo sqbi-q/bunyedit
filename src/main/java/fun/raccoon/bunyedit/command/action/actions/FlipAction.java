@@ -1,49 +1,36 @@
 package fun.raccoon.bunyedit.command.action.actions;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.ArgumentBuilderLiteral;
+import com.mojang.brigadier.builder.ArgumentBuilderRequired;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import fun.raccoon.bunyedit.command.CommandExceptions;
-import fun.raccoon.bunyedit.command.action.ISelectionAction;
+import fun.raccoon.bunyedit.command.action.ICommandAction;
+import fun.raccoon.bunyedit.command.action.arguments.ArgumentTypeBunyAxis;
+import fun.raccoon.bunyedit.command.action.arguments.BunyAxis;
 import fun.raccoon.bunyedit.data.PlayerData;
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
-import fun.raccoon.bunyedit.data.look.LookAxis;
 import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.PosMath;
 import fun.raccoon.bunyedit.util.Reorient;
 import net.minecraft.core.entity.player.Player;
-import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
 import net.minecraft.core.util.helper.Axis;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
-// TODO port to ICommandAction
+public class FlipAction extends ICommandAction {
 
-public class FlipAction implements ISelectionAction {
-    @Override
-    public boolean apply(
-        I18n i18n, CommandSource cmdSource, @Nonnull Player player,
-        PlayerData playerData, ValidSelection selection, List<String> argv
-    ) throws CommandSyntaxException {
-        Axis axis = new LookDirection(player.yRot, player.xRot).globalAxis(LookAxis.SURGE);
-        switch (argv.size()) {
-            case 0: break;
-            case 1:
-                if (argv.get(0).equals("^"))
-                    break;
-                try {
-                    axis = Axis.valueOf(argv.get(0).toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    throw CommandExceptions.INVALID_DIRECTION.create();
-                }
-                break;
-            default:
-                throw CommandExceptions.TOO_MANY_ARGS.create();
-        }
+    public int apply(@Nonnull Player player, BunyAxis bunyAxis) 
+    throws CommandSyntaxException {
+        
+        PlayerData playerData = PlayerData.get(player);
+        ValidSelection selection = validSelectionFrom(player);
+        
+        Axis axis = bunyAxis.getDirection(new LookDirection(player));
 
         ChunkPosition s1 = selection.getPrimary();
         ChunkPosition s2 = selection.getSecondary();
@@ -72,6 +59,30 @@ public class FlipAction implements ISelectionAction {
         
         playerData.getUndoTape(player.world).push(before, after);
 
-        return true;
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public void register(CommandDispatcher<CommandSource> commandDispatcher) {
+        commandDispatcher.register(ArgumentBuilderLiteral
+            .<CommandSource>literal("/flip")
+            .executes(PermissionedCommand
+                .process(c -> apply(
+                    c.getSource().getSender(),
+                    BunyAxis.playerDirection()
+                ))
+            )
+            .then(ArgumentBuilderRequired
+                .<CommandSource, BunyAxis>argument(
+                    "axis", new ArgumentTypeBunyAxis()
+                )
+                .executes(PermissionedCommand
+                    .process(c -> apply(
+                        c.getSource().getSender(),
+                        c.getArgument("axis", BunyAxis.class)
+                    ))
+                )
+            )
+        );
     }
 }

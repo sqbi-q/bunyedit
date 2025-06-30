@@ -23,6 +23,8 @@ public final class CommandExceptions {
         = fromI18n("bunyedit.cmd.err.toofewargs");
     public static final SimpleCommandExceptionType INVALID_DIRECTION
         = fromI18n("bunyedit.cmd.err.invaliddirection");
+    public static final SimpleCommandExceptionType INVALID_AXIS
+        = fromI18n("bunyedit.cmd.err.invalidaxis");
     public static final SimpleCommandExceptionType INVALID_FILTER
         = fromI18n("bunyedit.cmd.err.invalidfilter");
     public static final SimpleCommandExceptionType INVALID_PATTERN

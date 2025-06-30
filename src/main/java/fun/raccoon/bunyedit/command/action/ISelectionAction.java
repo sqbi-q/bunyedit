@@ -1,7 +1,7 @@
 package fun.raccoon.bunyedit.command.action;
 
 import java.util.List;
-import java.util.function.BiPredicate;
+// import java.util.function.BiPredicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,7 +18,7 @@ import fun.raccoon.bunyedit.util.parsers.CmdArgs;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
-import net.minecraft.core.world.chunk.ChunkPosition;
+// import net.minecraft.core.world.chunk.ChunkPosition;
 
 public interface ISelectionAction extends IPlayerAction {
     public boolean apply(I18n i18n, CommandSource cmdSource, @Nonnull Player player, PlayerData playerData, ValidSelection selection, List<String> argv) throws CommandSyntaxException;
@@ -42,6 +42,7 @@ public interface ISelectionAction extends IPlayerAction {
                             throw CommandExceptions.NO_SUCH_MASK.formatAndCreate(maskName);
                         }
 
+                        /* // just making sure everything compiles without changing this class
                         String[] maskArgv = {};
                         if (maskArgs.size() >= 1) {
                             maskArgv = maskArgs.subList(1, maskArgs.size()).toArray(new String[0]);
@@ -51,6 +52,7 @@ public interface ISelectionAction extends IPlayerAction {
 
                         selection = new Selection(selection);
                         selection.setMask(argv.get(i), mask);
+                        */
                     } catch (IndexOutOfBoundsException e) {
                         throw CommandExceptions
                             .fromString("-m: " + i18n.translateKey("bunyedit.cmd.err.toofewargs"))

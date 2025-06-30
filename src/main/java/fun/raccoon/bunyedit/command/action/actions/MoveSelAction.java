@@ -9,28 +9,27 @@ import com.mojang.brigadier.builder.ArgumentBuilderRequired;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import fun.raccoon.bunyedit.command.action.ICommandAction;
+import fun.raccoon.bunyedit.command.action.arguments.ArgumentTypeCoords;
+import fun.raccoon.bunyedit.command.action.arguments.Coords;
 import fun.raccoon.bunyedit.data.PlayerData;
+import fun.raccoon.bunyedit.data.look.LookDirection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import fun.raccoon.bunyedit.util.PosMath;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.net.command.CommandSource;
-import net.minecraft.core.net.command.arguments.ArgumentTypeIntegerCoordinates;
-import net.minecraft.core.net.command.helpers.IntegerCoordinates;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 public class MoveSelAction extends ICommandAction {
 
-    public int apply(@Nonnull Player player, IntegerCoordinates position) 
+    public int apply(@Nonnull Player player, Coords position) 
     throws CommandSyntaxException {
 
         PlayerData playerData = PlayerData.get(player);
         ValidSelection selection = validSelectionFrom(player);
         
-        // TODO port local coordinates (^) for type coords
-        ChunkPosition origin = new ChunkPosition(
-            position.getX(selection.getPrimary().x),
-            position.getY(selection.getPrimary().y),
-            position.getZ(selection.getPrimary().z)
+        ChunkPosition origin = position.asAbsolute(
+            selection.getPrimary(), 
+            new LookDirection(player)
         );
 
         playerData.selection.setPrimary(player.world, origin);
@@ -44,13 +43,13 @@ public class MoveSelAction extends ICommandAction {
         commandDispatcher.register(ArgumentBuilderLiteral
             .<CommandSource>literal("/movesel")
             .then(ArgumentBuilderRequired
-                .<CommandSource, IntegerCoordinates>argument(
-                    "position", ArgumentTypeIntegerCoordinates.intCoordinates()
+                .<CommandSource, Coords>argument(
+                    "position", new ArgumentTypeCoords()
                 )
                 .executes(PermissionedCommand
                     .process(c -> apply(
                         c.getSource().getSender(),
-                        c.getArgument("position", IntegerCoordinates.class)
+                        c.getArgument("position", Coords.class)
                     ))
                 )
             )
