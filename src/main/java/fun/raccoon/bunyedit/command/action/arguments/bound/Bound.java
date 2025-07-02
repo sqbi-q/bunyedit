@@ -1,6 +1,7 @@
 package fun.raccoon.bunyedit.command.action.arguments.bound;
 
 import java.util.EnumMap;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import fun.raccoon.bunyedit.data.look.LookDirection;
@@ -15,7 +16,7 @@ import net.minecraft.core.world.chunk.ChunkPosition;
  * Stores map between each direction and magnitude used for offsets. 
  */
 public class Bound {
-    private EnumMap<BoundDirection, Integer> directionMagnitudes;
+    protected EnumMap<BoundDirection, Integer> directionMagnitudes;
 
     public Bound() {
         directionMagnitudes = new EnumMap<>(BoundDirection.class);
@@ -40,6 +41,24 @@ public class Bound {
         for (BoundDirection dir : component.directions) {
             set(dir, component.magnitude);
         }
+        return this;
+    }
+
+    /**
+     * For every direction of new bound, set this bound's to such direction.
+     * E.g. `*16`.set(`N2,W8`) results in `N2,E16,S16,W8,U16,D16`
+     */
+    public Bound set(Bound newBound) {
+        Set<Entry<BoundDirection, Integer>> newEntries 
+            = newBound.directionMagnitudes.entrySet();
+
+        for (Entry<BoundDirection, Integer> newEntry : newEntries) {
+            BoundDirection direction = newEntry.getKey();
+            Integer magnitude = newEntry.getValue();
+            
+            directionMagnitudes.put(direction, magnitude);
+        }
+
         return this;
     }
 

@@ -47,7 +47,7 @@ public class BunyEdit implements ModInitializer {
         CommandManager.registerCommand(new SetMaskAction());
         CommandManager.registerCommand(new StackAction());
 
-        // CommandManager.registerCommand(new FillAction());        // TODO
+        CommandManager.registerCommand(new FillAction());        // TODO OutOfMemory in recursion
         CommandManager.registerCommand(new FlipAction());
     }
 
