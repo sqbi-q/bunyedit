@@ -9,7 +9,9 @@ import net.minecraft.server.world.ServerPlayerController;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
 /**
  * im gonna be honest i have no idea what im doing
@@ -26,26 +28,29 @@ public abstract class CursorCancelBlockBreakMixin {
     @Shadow
     private PlayerServer playerEntity;
     
-    @Redirect(
+    @WrapOperation(
         method = "handleBlockDig",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerPlayerController;destroyBlock(IIILnet/minecraft/core/util/helper/Side;)Z"))
     private boolean destroyBlockRedirect(
-            ServerPlayerController playerController, int x, int y, int z, Side side
+            ServerPlayerController playerController, int x, int y, int z, Side side,
+            Operation<Boolean> original
     ) {
         if (Cursor.isCursorItem(playerEntity.inventory.getCurrentItem()))
             return false;
-        return playerController.destroyBlock(x, y, z, side);
+
+        return original.call(playerController, x, y, z, side);
     }
 
-    @Redirect(
+    @WrapOperation(
         method = "handleBlockDig",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerPlayerController;startMining(IIILnet/minecraft/core/util/helper/Side;)V"))
     private void startMiningRedirect(
-            ServerPlayerController playerController, int x, int y, int z, Side side
+            ServerPlayerController playerController, int x, int y, int z, Side side,
+            Operation<Void> original
     ) {
         if (Cursor.isCursorItem(playerEntity.inventory.getCurrentItem())) {
             playerEntity.playerNetServerHandler.sendPacket(
@@ -54,6 +59,6 @@ public abstract class CursorCancelBlockBreakMixin {
             return;
         }
         
-        playerController.startMining(x, y, z, side);
+        original.call(playerController, x, y, z, side);
     }
 }
