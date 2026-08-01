@@ -27,9 +27,9 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 public abstract class CursorCancelBlockBreakMixin {
     @Shadow
     private PlayerServer playerEntity;
-    
+
     @WrapOperation(
-        method = "handleBlockDig",
+        method = "handlePlayerAction",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerPlayerController;destroyBlock(IIILnet/minecraft/core/util/helper/Side;)Z"))
@@ -44,7 +44,7 @@ public abstract class CursorCancelBlockBreakMixin {
     }
 
     @WrapOperation(
-        method = "handleBlockDig",
+        method = "handlePlayerAction",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerPlayerController;startMining(IIILnet/minecraft/core/util/helper/Side;)V"))

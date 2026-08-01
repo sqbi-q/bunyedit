@@ -17,6 +17,7 @@ import fun.raccoon.bunyedit.data.buffer.BlockData;
 import net.minecraft.core.block.Block;
 import net.minecraft.core.block.Blocks;
 import net.minecraft.core.block.material.Material;
+import net.minecraft.core.block.material.Materials;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.exceptions.CommandExceptions;
 import net.minecraft.core.net.command.util.CommandHelper;
@@ -245,7 +246,7 @@ public class BunyBlockArgumentParser /*extends BlockArgumentParser*/ {
         return blockData -> {
             @Nullable Block<?> block = blockData.getBlock();
             if (block == null) {
-                return Material.air == material;
+                return Materials.AIR == material;
             }
             return material == block.getMaterial();
         };

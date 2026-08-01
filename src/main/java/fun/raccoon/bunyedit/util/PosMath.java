@@ -73,8 +73,8 @@ public class PosMath {
 
     public static ChunkPosition directionOffset(Direction direction) {
         return new ChunkPosition(
-            direction.getOffsetX(),
-            direction.getOffsetY(),
-            direction.getOffsetZ());
+            direction.offsetX(),
+            direction.offsetY(),
+            direction.offsetZ());
     }
 }

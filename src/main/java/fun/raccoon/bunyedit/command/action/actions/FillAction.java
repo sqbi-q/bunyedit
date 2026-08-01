@@ -47,7 +47,7 @@ public class FillAction extends ICommandAction {
             && filter.test(new BlockData(world, pos))
         ) {
             set.add(pos);
-            for (Direction dir : Direction.directions) {
+            for (Direction dir : Direction.all) {
                 ChunkPosition newPos = PosMath.add(pos, PosMath.directionOffset(dir));
 
                 if (!set.contains(newPos))

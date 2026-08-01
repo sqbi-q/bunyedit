@@ -17,6 +17,7 @@ import fun.raccoon.bunyedit.data.buffer.BlockData;
 import net.minecraft.core.block.Block;
 import net.minecraft.core.block.Blocks;
 import net.minecraft.core.block.material.MaterialLiquid;
+import net.minecraft.core.block.material.Materials;
 import net.minecraft.core.block.material.Material;
 import net.minecraft.core.block.material.MaterialColor;
 
@@ -90,19 +91,19 @@ public class Filter {
         Material material;
         Predicate<Block<?>> p = null;
         switch (materialFilterStr) {
-            case "grass": material = Material.grass; break;
-            case "dirt": material = Material.dirt; break;
-            case "wood": material = Material.wood; break;
-            case "stone": material = Material.stone; break;
-            case "metal": material = Material.metal; break;
-            case "water": material = Material.water; break;
-            case "lava": material = Material.lava; break;
-            case "leaves": material = Material.leaves; break;
-            case "plant": material = Material.plant; break;
-            case "sand": material = Material.sand; break;
-            case "glass": material = Material.glass; break;
-            case "ice": material = Material.ice; break;
-            case "piston": material = Material.piston; break;
+            case "grass": material = Materials.GRASS; break;
+            case "dirt": material = Materials.DIRT; break;
+            case "wood": material = Materials.WOOD; break;
+            case "stone": material = Materials.STONE; break;
+            case "metal": material = Materials.METAL; break;
+            case "water": material = Materials.WATER; break;
+            case "lava": material = Materials.LAVA; break;
+            case "leaves": material = Materials.LEAVES; break;
+            case "plant": material = Materials.PLANT; break;
+            case "sand": material = Materials.SAND; break;
+            case "glass": material = Materials.GLASS; break;
+            case "ice": material = Materials.ICE; break;
+            case "piston": material = Materials.PISTON; break;
             case "snow":
                 material = null;
                 p = block -> block.getMaterialColor().equals(MaterialColor.snow);

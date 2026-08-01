@@ -10,12 +10,16 @@ pluginManagement {
             url = 'https://jitpack.io'
         }
         maven {
-            name = 'Babric'
-            url = 'https://maven.glass-launcher.net/babric'
-        }
-        maven {
             name = 'SignalumMavenInfrastructure'
             url = 'https://maven.thesignalumproject.net/infrastructure'
         }
+        mavenCentral()
     }
+    def foojayResolverVersion = providers.gradleProperty("foojay_resolver_version")
+	plugins {
+		id("org.gradle.toolchains.foojay-resolver-convention").version(foojayResolverVersion.get())
+	}
+}
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention")
 }

@@ -14,8 +14,8 @@ import net.minecraft.core.world.World;
 
 @Mixin(value = Item.class, remap = false)
 public abstract class CursorUseMixin {
-    @Inject(method = "onUseItem", at = @At("TAIL"))
-    private void onUseItemCheckCursor(ItemStack itemstack, World world, Player player, CallbackInfoReturnable<ItemStack> cir) {
+    @Inject(method = "onUse", at = @At("TAIL"))
+    private void onUseCursorItem(ItemStack itemstack, World world, Player player, CallbackInfoReturnable<ItemStack> cir) {
         if (player == null) return;
 
         if (Cursor.isCursorItem(itemstack))

@@ -3,6 +3,8 @@ package fun.raccoon.bunyedit.util;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joml.Vector3d;
+
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import fun.raccoon.bunyedit.data.selection.Selection;
 import fun.raccoon.bunyedit.data.selection.Selection.Slot;
@@ -30,7 +32,12 @@ public class ChatString {
     }
 
     public static String gen(@Nonnull HitResult hit) {
-        return ChatString.gen_coord(hit.x, hit.y, hit.z);
+        Vector3d pos = new Vector3d(hit.location);
+        return ChatString.gen_coord(
+            (int) pos.x,
+            (int) pos.y,
+            (int) pos.z
+        );
     }
 
     public static String gen(@Nonnull BlockData blockData) {

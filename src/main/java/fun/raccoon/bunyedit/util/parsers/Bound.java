@@ -56,13 +56,13 @@ public class Bound {
                                 directions.add(heading.globalDir(LookAxis.SURGE));
                                 break;
                             case "B":
-                                directions.add(heading.globalDir(LookAxis.SURGE).getOpposite());
+                                directions.add(heading.globalDir(LookAxis.SURGE).opposite());
                                 break;
                             case "L":
                                 directions.add(heading.globalDir(LookAxis.SWAY));
                                 break;
                             case "R":
-                                directions.add(heading.globalDir(LookAxis.SWAY).getOpposite());
+                                directions.add(heading.globalDir(LookAxis.SWAY).opposite());
                                 break;
                             case "*":
                                 directions.add(Direction.SOUTH);

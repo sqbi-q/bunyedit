@@ -2,6 +2,7 @@ package fun.raccoon.bunyedit;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.net.command.CommandManager;
+import turniplabs.halplibe.HalpLibe;
 import turniplabs.halplibe.util.TomlConfigHandler;
 import turniplabs.halplibe.util.toml.Toml;
 
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import fun.raccoon.bunyedit.command.action.actions.*;
 
 public class BunyEdit implements ModInitializer {
-    public static final String MOD_ID = "bunyedit";
+    public static final String MOD_ID = HalpLibe.registerMod("bunyedit", false);
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final TomlConfigHandler CONFIG;

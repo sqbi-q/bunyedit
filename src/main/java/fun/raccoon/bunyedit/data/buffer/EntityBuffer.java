@@ -19,7 +19,9 @@ public class EntityBuffer {
     public void createIn(World world) {
         buffer.forEach(p -> {
             if (p.getLeft() == null) {
-                EntityDispatcher.createEntityFromNBT(p.getRight(), world);
+                EntityDispatcher
+                    .getInstance()
+                    .createEntityFromNBT(p.getRight(), world);
             }
         });
     }

@@ -10,17 +10,16 @@ import fun.raccoon.bunyedit.util.ChatString;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.PlayerLocal;
 import net.minecraft.core.util.phys.HitResult;
-import net.minecraft.core.util.phys.HitResult.HitType;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.item.Item;
 import net.minecraft.core.item.ItemStack;
 import net.minecraft.core.item.Items;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.TextFormatting;
-import net.minecraft.core.net.packet.PacketChat;
-import net.minecraft.core.util.phys.Vec3;
+import net.minecraft.core.net.packet.PacketMessage;
 import net.minecraft.core.world.World;
 import net.minecraft.core.world.chunk.ChunkPosition;
+import net.minecraft.core.world.pos.TilePosc;
 import net.minecraft.server.entity.player.PlayerServer;
 import turniplabs.halplibe.helper.EnvironmentHelper;
 
@@ -30,8 +29,9 @@ import turniplabs.halplibe.helper.EnvironmentHelper;
 public class Cursor {
     /** 
      * maximum distance from the player that blocks can be selected from
+     * (max. 200)
      */
-    private static final int TRACE_DISTANCE = 256;
+    private static final int TRACE_DISTANCE = 200;
 
     /**
      * default item used for the cursor, deliberately chosen to be reasonably unique
@@ -72,7 +72,7 @@ public class Cursor {
      */
     private static void sendMessage(Player player, String s) {
         if (EnvironmentHelper.isServerEnvironment()) {
-            ((PlayerServer)player).playerNetServerHandler.sendPacket(new PacketChat(s));
+            ((PlayerServer)player).playerNetServerHandler.sendPacket(new PacketMessage(s));
         } else if (player instanceof PlayerLocal) {
             Minecraft.getMinecraft().hudIngame.addChatMessage(s);
         }
@@ -92,23 +92,22 @@ public class Cursor {
         if (!playerData.lastInteract.tryUpdate(((WorldAccessor) world).getRuntime()))
             return;
 
-        Vec3 start = player.getPosition(0, false);
         // PlayerServer doesn't know about its height offset?
-        if (EnvironmentHelper.isServerEnvironment() /*&& player instanceof PlayerServer*/) {
-            if (player.isDwarf())
-                start.y += 0.62;
-            else
-                start.y += 1.62;
-        }
-        Vec3 direction = player.getViewVector(0);
-        Vec3 end = start.add(
-            direction.x * TRACE_DISTANCE,
-            direction.y * TRACE_DISTANCE,
-            direction.z * TRACE_DISTANCE);
-        @Nullable HitResult hit = world.checkBlockCollisionBetweenPoints(start, end);
+        // if (EnvironmentHelper.isServerEnvironment() /*&& player instanceof PlayerServer*/) {
+        //     if (player.isDwarf())
+        //         start.y += 0.62;
+        //     else
+        //         start.y += 1.62;
+        // }
 
-        if (hit != null && hit.hitType.equals(HitType.TILE)) {
-            ChunkPosition pos = new ChunkPosition(hit.x, hit.y, hit.z);
+        @Nullable HitResult hit = player.rayCast(TRACE_DISTANCE, 0, false, true, true);
+
+        if (hit != null && hit instanceof HitResult.Tile) {
+            TilePosc tilePos = ((HitResult.Tile) hit).tilePos;
+            ChunkPosition pos = new ChunkPosition(
+                tilePos.x(),
+                tilePos.y(),
+                tilePos.z());
             playerData.selection.set(slot, world, pos);
 
             sendMessage(player, ChatString.gen_select_action(slot, world, pos));

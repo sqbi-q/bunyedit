@@ -15,7 +15,7 @@ import fun.raccoon.bunyedit.data.selection.Selection;
 import fun.raccoon.bunyedit.data.selection.ValidSelection;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.net.command.CommandSource;
-import net.minecraft.core.player.gamemode.Gamemode;
+import net.minecraft.core.player.gamemode.Gamemodes;
 import net.minecraft.core.net.command.CommandManager.CommandRegistry;
 
 public abstract class ICommandAction implements CommandRegistry {
@@ -42,11 +42,11 @@ public abstract class ICommandAction implements CommandRegistry {
         }
 
         final boolean permsOnCreative = 
-            sender.gamemode.equals(Gamemode.creative) 
+            sender.gamemode.equals(Gamemodes.CREATIVE) 
             && BunyEdit.ALLOWED_CREATIVE;
         
         final boolean permsOnSurvival =
-            sender.gamemode.equals(Gamemode.survival)
+            sender.gamemode.equals(Gamemodes.SURVIVAL)
             && BunyEdit.ALLOWED_SURVIVAL;
 
         return cmdSource.hasAdmin() || permsOnCreative || permsOnSurvival;

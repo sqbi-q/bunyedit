@@ -63,7 +63,7 @@ public class BlockBuffer extends HashMap<ChunkPosition, BlockData> {
                 world.getChunkFromChunkCoords(
                         chunkPos.getLeft(),
                         chunkPos.getRight())
-                    .recalcHeightmap();
+                    .recalcHeightmapAndLightmap();
             }
             world.scheduleLightingUpdate(LightLayer.Sky, pos.x, pos.y, pos.z, pos.x, pos.y, pos.z);
 

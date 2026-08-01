@@ -1,0 +1,41 @@
+[versions]
+loom        = "1.15-SNAPSHOT"
+java        = "17"
+gradleJava  = "21"
+bta         = "8.0.1"
+btaChannel = "release"
+loader      = "0.18.4-bta.11"
+modMenu     = "5.0.2"
+halplibe    = "6.1.3+8.0"
+legacy-lwjgl = "1.0.6"
+slf4jApi    = "2.0.17"
+lwjgl       = "3.3.3"
+joml        = "1.10.8"
+jomlPrimitives = "1.10.0"
+
+[libraries]
+loader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "loader" }
+halplibe = { group = "turniplabs", name = "halplibe", version.ref = "halplibe" }
+modMenu  = { group = "turniplabs", name = "modmenu-bta", version.ref = "modMenu" }
+
+legacy-lwjgl = { group = "com.github.Better-than-Adventure", name = "legacy-lwjgl3", version.ref = "legacy-lwjgl" }
+
+slf4jApi = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4jApi" }
+
+# https://piston-data.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar
+clientJar = { group = "objects", name = "client", version = "43db9b498cb67058d2e12d394e6507722e71bb45" }
+
+joml            = { group = "org.joml", name = "joml", version.ref = "joml" }
+joml-primitives = { group = "org.joml", name = "joml-primitives", version.ref = "jomlPrimitives" }
+
+lwjgl        = { group = "org.lwjgl", version.ref="lwjgl", name = "lwjgl"}
+lwjgl-glfw   = { group = "org.lwjgl", version.ref="lwjgl", name = "lwjgl-glfw"}
+lwjgl-openal = { group = "org.lwjgl", version.ref="lwjgl", name = "lwjgl-openal"}
+lwjgl-opengl = { group = "org.lwjgl", version.ref="lwjgl", name = "lwjgl-opengl"}
+lwjgl-stb    = { group = "org.lwjgl", version.ref="lwjgl", name = "lwjgl-stb"}
+
+[bundles]
+btaLwjgl = [ "lwjgl", "lwjgl-glfw", "lwjgl-openal", "lwjgl-opengl", "lwjgl-stb", "legacy-lwjgl" ]
+
+[plugins]
+loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }

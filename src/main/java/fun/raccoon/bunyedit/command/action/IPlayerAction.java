@@ -13,7 +13,7 @@ import fun.raccoon.bunyedit.data.PlayerData;
 import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.lang.I18n;
 import net.minecraft.core.net.command.CommandSource;
-import net.minecraft.core.player.gamemode.Gamemode;
+import net.minecraft.core.player.gamemode.Gamemodes;
 
 public interface IPlayerAction extends IAction {
     public boolean apply(I18n i18n, CommandSource cmdSource, @Nonnull Player player, PlayerData playerData, List<String> argv) throws CommandSyntaxException;
@@ -29,9 +29,9 @@ public interface IPlayerAction extends IAction {
         if (cmdSource.hasAdmin()) {
             allowed = true;
         } else {
-            if (player.gamemode.equals(Gamemode.creative) && BunyEdit.ALLOWED_CREATIVE) {
+            if (player.gamemode.equals(Gamemodes.CREATIVE) && BunyEdit.ALLOWED_CREATIVE) {
                 allowed = true;
-            } else if (player.gamemode.equals(Gamemode.survival) && BunyEdit.ALLOWED_SURVIVAL) {
+            } else if (player.gamemode.equals(Gamemodes.SURVIVAL) && BunyEdit.ALLOWED_SURVIVAL) {
                 allowed = true;
             }
         }

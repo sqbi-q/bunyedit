@@ -7,6 +7,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joml.primitives.AABBd;
+
 import fun.raccoon.bunyedit.data.buffer.BlockBuffer;
 import fun.raccoon.bunyedit.data.buffer.BlockData;
 import fun.raccoon.bunyedit.data.buffer.EntityBuffer;
@@ -14,7 +16,6 @@ import fun.raccoon.bunyedit.data.buffer.WorldBuffer;
 import fun.raccoon.bunyedit.data.selection.Selection.Slot;
 import fun.raccoon.bunyedit.util.PosMath;
 import net.minecraft.core.entity.Entity;
-import net.minecraft.core.util.phys.AABB;
 import net.minecraft.core.world.chunk.ChunkPosition;
 
 /**
@@ -112,11 +113,14 @@ public class ValidSelection {
         ChunkPosition min = PosMath.min(this.getPrimary(), this.getSecondary());
         ChunkPosition max = PosMath.max(this.getPrimary(), this.getSecondary());
 
+        AABBd aabb = new AABBd(
+            min.x, min.y, min.z,
+            max.x, max.y, max.z
+        ).correctBounds();
+
         List<Entity> entities = this.selection.getWorld().getEntitiesWithinAABB(
             Entity.class,
-            AABB.getPermanentBB(
-                min.x, min.y, min.z,
-                max.x, max.y, max.z));
+            aabb);
 
         EntityBuffer page = new EntityBuffer();
         
